@@ -1,0 +1,34 @@
+{
+  "faqs": [
+    {
+      "id": 1,
+      "question": "O que é um Hash?",
+      "answer": "É como uma impressão digital do arquivo. Se um único pixel mudar, o código muda totalmente. SafeHash usa SHA-256, o padrão de segurança mais confiável do mercado, garantindo que qualquer alteração seja detectada instantaneamente."
+    },
+    {
+      "id": 2,
+      "question": "Preciso instalar algo?",
+      "answer": "Não, o SafeHash é 100% web, focado em agilidade e facilidade de uso. Basta acessar o site, fazer login e começar a proteger seus arquivos imediatamente. Funciona em qualquer navegador moderno."
+    },
+    {
+      "id": 3,
+      "question": "Os laudos gerados têm validade jurídica?",
+      "answer": "Sim! Os certificados PDF gerados pelo SafeHash contêm timestamp, metadados e hashes verificáveis, sendo aceitos como prova técnica em processos judiciais e auditorias. Recomendamos consultar seu advogado para casos específicos."
+    },
+    {
+      "id": 4,
+      "question": "Posso verificar um arquivo já registrado?",
+      "answer": "Sim! Você pode fazer upload do arquivo novamente a qualquer momento e SafeHash comparará o hash atual com o original. Se forem idênticos, o arquivo não sofreu alterações. Se forem diferentes, você receberá um relatório detalhado das divergências."
+    },
+    {
+      "id": 5,
+      "question": "Meus arquivos são armazenados no SafeHash?",
+      "answer": "Não. SafeHash gera apenas o hash (impressão digital) do arquivo. O arquivo em si não é armazenado em nossos servidores. Você mantém total controle e privacidade de seus dados. Apenas o hash e metadados são registrados para verificação futura."
+    },
+    {
+      "id": 6,
+      "question": "Qual é o tamanho máximo de arquivo?",
+      "answer": "SafeHash pode processar arquivos de até 5GB. Para arquivos maiores ou necessidades especiais, entre em contato com nosso suporte. Planos Pro oferecem limites maiores e processamento em lote."
+    }
+  ]
+}

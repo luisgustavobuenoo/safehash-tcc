@@ -1,0 +1,34 @@
+{
+  "app": {
+    "name": "SafeHash",
+    "tagline": "Proteja a integridade das suas evidências digitais",
+    "description": "A ferramenta web definitiva para garantir que seus documentos, prints e arquivos não foram alterados, gerando laudos técnicos com validade de hash em segundos.",
+    "version": "1.0.0"
+  },
+  "hero": {
+    "title": "Proteja a integridade das suas evidências digitais com o SafeHash.",
+    "subtitle": "A ferramenta web definitiva para garantir que seus documentos, prints e arquivos não foram alterados, gerando laudos técnicos com validade de hash em segundos.",
+    "cta": {
+      "primary": "Começar a Registrar Agora",
+      "secondary": "Saiba Mais"
+    }
+  },
+  "overview": {
+    "title": "Garanta a autenticidade de seus arquivos digitais em segundos",
+    "description": "SafeHash é uma ferramenta web gratuita que gera impressões digitais únicas (hashes SHA-256) para qualquer arquivo, criando laudos técnicos que comprovam a integridade e autenticidade de documentos, prints e evidências digitais sem fazer alterações no arquivo original."
+  },
+  "testimonial": {
+    "quote": "Usamos o SafeHash para proteger prints de conversas importantes e documentos de RH. A facilidade de uso e a confiabilidade dos laudos gerados nos deram total segurança jurídica. Recomendo para qualquer profissional que precise de evidências digitais confiáveis!",
+    "author": "Dra. Marina Silva",
+    "title": "Advogada Especialista em Direito Digital"
+  },
+  "comparison": {
+    "title": "SafeHash é a ferramenta certa para você?",
+    "subtitle": "Escolha o plano que melhor se adequa às suas necessidades",
+    "description": "Com o SafeHash Pro, você desbloqueia recursos avançados para organizações que precisam de auditoria completa e relatórios em lote."
+  },
+  "footer": {
+    "tagline": "SafeHash - Garantindo a integridade digital com confiança e simplicidade.",
+    "copyright": "© 2026 SafeHash. Todos os direitos reservados"
+  }
+}

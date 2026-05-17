@@ -1,0 +1,42 @@
+{
+  "resources": [
+    {
+      "id": 1,
+      "type": "GUIAS PRÁTICOS",
+      "title": "Como Proteger Prints de WhatsApp com Validade Jurídica",
+      "description": "Aprenda passo a passo como registrar prints de conversas importantes no SafeHash e gerar laudos técnicos que servem como prova em processos judiciais.",
+      "link": "#"
+    },
+    {
+      "id": 2,
+      "type": "WEBINARS",
+      "title": "Integridade Digital para Advogados: Protegendo Evidências Online",
+      "description": "Descubra como profissionais jurídicos usam SafeHash para garantir a autenticidade de documentos, e-mails e prints com comprovação técnica irrefutável.",
+      "link": "#"
+    },
+    {
+      "id": 3,
+      "type": "ESTUDOS DE CASO",
+      "title": "Como RH Protege Documentos Internos com SafeHash",
+      "description": "Veja como gestores de RH usam SafeHash para garantir a integridade de contratos, comunicações e documentos sensíveis, prevenindo fraudes e alterações não autorizadas.",
+      "link": "#"
+    }
+  ],
+  "useCases": [
+    {
+      "id": 1,
+      "title": "Advogados e Profissionais Jurídicos",
+      "description": "Proteja prints de WhatsApp, e-mails e conversas como provas incontestáveis em processos. Gere laudos técnicos com validade jurídica comprovada."
+    },
+    {
+      "id": 2,
+      "title": "Gestores de RH e Empresas",
+      "description": "Garanta a autenticidade de documentos internos, contratos e comunicações. Proteja-se contra fraudes e alterações de documentos críticos."
+    },
+    {
+      "id": 3,
+      "title": "Profissionais de TI e Segurança",
+      "description": "Realize auditoria de arquivos, verificação de segurança e detecção de alterações não autorizadas. Mantenha conformidade com regulamentações de dados."
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "features": [
+    {
+      "id": 1,
+      "title": "Carimbo de Integridade Digital",
+      "description": "Gere uma impressão digital única (SHA-256) para qualquer arquivo, garantindo que ele é idêntico ao original. Perfeito para proteger documentos legais, prints e evidências digitais.",
+      "icon": "Shield"
+    },
+    {
+      "id": 2,
+      "title": "Emissão de Laudos de Autenticidade",
+      "description": "Baixe certificados em PDF contendo metadados e hashes para provar a validade da prova em processos ou auditorias. Documentos com validade jurídica comprovada.",
+      "icon": "FileText"
+    },
+    {
+      "id": 3,
+      "title": "Validação Instantânea",
+      "description": "Suba um arquivo a qualquer momento e verifique instantaneamente se ele sofreu alguma alteração desde o seu registro original. Segurança em tempo real.",
+      "icon": "CheckCircle"
+    }
+  ],
+  "capabilities": [
+    {
+      "id": 1,
+      "title": "Geração de Hash SHA-256",
+      "description": "Crie impressões digitais únicas e irreproduzíveis para seus arquivos. Se um único pixel mudar, o código muda totalmente, garantindo total rastreabilidade de qualquer modificação."
+    },
+    {
+      "id": 2,
+      "title": "Relatórios Técnicos em PDF",
+      "description": "Gere documentos profissionais com timestamp, metadados e hashes que servem como prova técnica em processos judiciais e auditorias corporativas com validade comprovada."
+    },
+    {
+      "id": 3,
+      "title": "Verificação de Integridade",
+      "description": "Compare o hash atual de um arquivo com o hash original registrado. Detecte qualquer alteração, mesmo que mínima, com precisão absoluta e gere relatório de divergência."
+    },
+    {
+      "id": 4,
+      "title": "Proteção de Prints e Capturas",
+      "description": "Registre prints de WhatsApp, e-mails, conversas e redes sociais com comprovação técnica de autenticidade. Ideal para advogados e investigadores que precisam de provas irrefutáveis."
+    },
+    {
+      "id": 5,
+      "title": "Auditoria de Documentos",
+      "description": "Mantenha um histórico completo de todas as versões de seus documentos. Prove quando foram criados, modificados e por quem com rastreamento completo de alterações."
+    },
+    {
+      "id": 6,
+      "title": "Acesso à API",
+      "description": "Integre SafeHash em seus sistemas e processos automatizados. Validação de integridade em escala para empresas e organizações que precisam de segurança contínua."
+    },
+    {
+      "id": 7,
+      "title": "Suporte Prioritário",
+      "description": "Equipe técnica disponível para ajudar com implementações complexas, dúvidas jurídicas sobre validade de hashes e integrações customizadas para sua organização."
+    }
+  ]
+}
