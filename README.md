@@ -1,356 +1,257 @@
-# Exterro FTK Imager Clone - Projeto React + Tailwind CSS
+# 🔒 SafeHash
 
-Uma cópia fiel e profissional do site Exterro FTK Imager, construída com React 19, TypeScript, Tailwind CSS 4 e componentes shadcn/ui. Projeto completo com documentação, componentes reutilizáveis e estrutura escalável.
+Plataforma para registro e verificação de integridade de arquivos digitais utilizando hashes criptográficos, garantindo a imutabilidade e a rastreabilidade de evidências digitais.
 
-## 🎯 Características
+## 📌 Sobre o Projeto
 
-✅ **Replica fiel** do site original com layout, cores e conteúdo  
-✅ **React 19** com TypeScript para type safety  
-✅ **Tailwind CSS 4** para styling moderno  
-✅ **shadcn/ui** componentes prontos para uso  
-✅ **Componentes reutilizáveis** bem estruturados  
-✅ **Dados em JSON** para fácil manutenção  
-✅ **Documentação completa** (ARCHITECTURE.md, COMPONENTS.md)  
-✅ **Responsivo** mobile-first  
-✅ **Acessível** com semântica HTML correta  
-✅ **Animações suaves** com Framer Motion  
+O SafeHash aborda a crescente necessidade de **garantir a autenticidade e a integridade de arquivos digitais**, um desafio crítico em áreas como perícia forense, compliance regulatório e proteção de propriedade intelectual. Em um mundo onde a manipulação de dados é cada vez mais fácil, ter um método confiável para provar que um arquivo não foi alterado desde seu registro é fundamental.
 
-## 📋 Pré-requisitos
+Nossa plataforma permite que usuários (peritos, advogados, empresas) registrem o hash criptográfico de um arquivo, criando uma "impressão digital" única e imutável. Posteriormente, qualquer pessoa pode verificar a integridade desse arquivo, comparando seu hash atual com o hash registrado na plataforma. Isso oferece uma **prova irrefutável de não-alteração** e uma trilha de auditoria transparente.
 
-- Node.js 18+
-- pnpm 10+
+### Diferenciais principais:
 
-## 🚀 Quick Start
+- **Registro de Evidências:** Armazenamento seguro de hashes de arquivos com metadados (nome, tamanho, tipo MIME).
 
-### 1. Instalar Dependências
-```bash
-cd exterro-ftk-imager-clone
-pnpm install
+- **Verificação de Integridade:** Funcionalidade para comparar o hash de um arquivo com o hash registrado, confirmando sua autenticidade.
+
+- **Trilha de Auditoria:** Logs detalhados de todas as verificações realizadas, incluindo IP e timestamp.
+
+- **Autenticação Segura:** Sistema de login e registro de usuários com senhas hasheadas (bcrypt) e JWT para controle de acesso.
+
+- **Simplicidade e Eficiência:** Interface intuitiva para upload e verificação, com processamento rápido de hashes.
+
+## 🏗️ Arquitetura
+
+**Padrão Adotado: Monolito Modular**
+
+A arquitetura do SafeHash segue um padrão de **monolito modular**, onde as funcionalidades são agrupadas em módulos lógicos, mas implantadas como uma única unidade. Esta abordagem foi escolhida para acelerar o desenvolvimento do MVP, reduzir a complexidade operacional e facilitar a manutenção, ao mesmo tempo em que permite uma clara separação de responsabilidades entre os domínios do sistema.
+
+### Por que essa arquitetura?
+
+- **Agilidade no Desenvolvimento:** Para um projeto em fase inicial, um monolito modular permite um desenvolvimento mais rápido e iterativo, com menos sobrecarga de comunicação entre serviços.
+
+- **Simplicidade Operacional:** A implantação e o gerenciamento de uma única aplicação são mais simples do que gerenciar múltiplos microsserviços, reduzindo a complexidade de infraestrutura.
+
+- **Coerência de Domínio:** Os domínios de usuário, evidências e logs de verificação possuem um acoplamento natural, tornando o monolito modular uma escolha eficiente para manter a coesão.
+
+- **Escalabilidade Futura:** A modularidade interna facilita a eventual extração de microsserviços para funcionalidades que demandem escalabilidade independente ou tecnologias diferentes, caso o projeto cresça e as necessidades mudem.
+
+## 🛠️ Stack de Desenvolvimento
+
+### Backend
+
+| Ferramenta | Versão | Função |
+| --- | --- | --- |
+| Node.js | 20 LTS | Runtime JavaScript server-side |
+| Express | 4.x | Framework HTTP minimalista |
+| TypeScript | 5.x | Tipagem estática |
+| `mysql2` | ^3.x | Driver MySQL para Node.js |
+| `bcrypt` | ^5.x | Hash seguro de senhas |
+| `jsonwebtoken` | ^9.x | Geração e validação de JWT |
+
+### Banco de Dados
+
+| Ferramenta | Função |
+| --- | --- |
+| MySQL 8 | Banco principal (usuários, evidências, logs) |
+
+### Infraestrutura
+
+| Ferramenta | Função |
+| --- | --- |
+| Docker | Containerização do serviço de backend |
+| Docker Compose | Orquestração local (para subir o banco de dados) |
+
+### Design & Prototipação
+
+| Ferramenta | Função |
+| --- | --- |
+| draw.io | Diagramas de arquitetura e fluxo de negócio |
+
+## 🔄 Fluxo da Regra de Negócio Principal
+
+O diagrama completo do fluxo de negócio principal está disponível em `docs/safehash_fluxo.drawio`. Abra este arquivo no [draw.io](https://app.diagrams.net/) para visualizar interativamente.
+
+### Resumo do Fluxo End-to-End: Registro e Verificação de Evidências
+
+```mermaid
+graph TD
+    A[Usuário] --> B{Autenticação};
+    B -- Login/Cadastro --> C[Sistema SafeHash];
+    C -- JWT Válido --> D[Acesso à Funcionalidade];
+
+    D -- "Selecionar Arquivo" --> E["Frontend: Calcular Hash (SHA-256)"]
+    E -- "Hash, Nome, Tamanho" --> F["Backend: Registrar Evidência (POST /register-hash)"]
+    F -- "Salvar em DB" --> G["MySQL: Tabela 'evidences'"]
+    G -- "Sucesso" --> H["Confirmação de Registro"]
+
+    D -- "Visualizar Histórico" --> I["Backend: Listar Evidências (GET /list)"]
+    I -- "Buscar em DB" --> G
+    G -- "Retornar Dados" --> J["Frontend: Exibir Histórico"]
+
+    D -- "Verificar Arquivo" --> K["Frontend: Calcular Hash do Arquivo a Verificar"]
+    K -- "Hash Calculado, ID da Evidência" --> L["Backend: Verificar Integridade"]
+    L -- "Comparar com DB" --> G
+    G -- "Registrar Log" --> M["MySQL: Tabela 'verification_logs'"]
+    M -- "Resultado da Comparação" --> N["Frontend: Exibir Resultado da Verificação"]
 ```
 
-### 2. Iniciar Servidor de Desenvolvimento
-```bash
-pnpm dev
+**Invariantes de Negócio:**
+
+- Um hash de arquivo é único para um determinado conteúdo. Qualquer alteração no arquivo resultará em um hash diferente.
+
+- O registro de uma evidência requer um usuário autenticado.
+
+- A verificação de um arquivo compara o hash fornecido com o hash armazenado, sem modificar a evidência original.
+
+- Todos os registros e verificações são auditáveis através de logs.
+
+## 🔐 Autenticação e Autorização
+
+**Estratégia: JWT (JSON Web Tokens)**
+
+O SafeHash utiliza JSON Web Tokens para gerenciar a autenticação e autorização dos usuários. Após um login bem-sucedido, um JWT é emitido para o usuário, que deve ser incluído nas requisições subsequentes para acessar rotas protegidas.
+
+```
+Login (email/cpf, senha) ──► Backend (verifica bcrypt) ──► JWT Gerado
+                                                              │
+                                                      { id: user.id, cpf: user.cpf, exp: ... }
+                                                              │
+                                                   Enviado no header:
+                                            Authorization: Bearer <token>
 ```
 
-O servidor estará disponível em `http://localhost:3000`
+**Configurações de segurança:**
 
-### 3. Build para Produção
-```bash
-pnpm build
-```
+- **Senhas:** Armazenadas como hashes bcrypt (salt rounds 10).
 
-### 4. Preview da Build
-```bash
-pnpm preview
-```
+- **Token:** Assinado com uma chave secreta (`CHAVE_PERICIA_2026` - idealmente uma variável de ambiente) e com expiração de 1 dia.
+
+- **Acesso:** Rotas protegidas exigem um JWT válido e decodificável.
 
 ## 📁 Estrutura do Projeto
 
 ```
-exterro-ftk-imager-clone/
-├── client/
-│   ├── public/                 # Arquivos estáticos (favicon, robots.txt)
+safehash/
+├── client/                               # Frontend (React)
+│   ├── public/
 │   ├── src/
-│   │   ├── components/         # Componentes React
-│   │   │   ├── ui/            # shadcn/ui components
-│   │   │   ├── Header.tsx
-│   │   │   ├── Footer.tsx
-│   │   │   ├── HeroSection.tsx
-│   │   │   ├── FeaturesSection.tsx
-│   │   │   ├── CapabilitiesSection.tsx
-│   │   │   ├── TestimonialSection.tsx
-│   │   │   ├── FAQSection.tsx
-│   │   │   ├── ResourcesSection.tsx
-│   │   │   ├── ComparisonSection.tsx
-│   │   │   ├── CTASection.tsx
-│   │   │   └── ErrorBoundary.tsx
-│   │   ├── pages/              # Páginas
-│   │   │   ├── Home.tsx
-│   │   │   └── NotFound.tsx
-│   │   ├── data/               # Dados JSON
-│   │   │   ├── features.json
-│   │   │   ├── faq.json
-│   │   │   ├── resources.json
-│   │   │   └── config.json
-│   │   ├── hooks/              # Custom hooks
-│   │   ├── contexts/           # React contexts
-│   │   ├── lib/                # Utilitários
-│   │   ├── App.tsx             # Componente raiz
-│   │   ├── main.tsx            # Entrada React
-│   │   └── index.css           # Estilos globais
+│   │   ├── assets/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── App.tsx
+│   │   ├── main.tsx
+│   │   └── vite-env.d.ts
 │   ├── index.html
+│   ├── package.json
+│   ├── tsconfig.json
 │   └── vite.config.ts
-├── server/                     # Servidor Express (placeholder)
-├── shared/                     # Código compartilhado
-├── package.json
-├── tsconfig.json
-├── tailwind.config.ts
-├── ARCHITECTURE.md             # Documentação de arquitetura
-├── COMPONENTS.md               # Documentação de componentes
-└── README.md                   # Este arquivo
+│
+├── server/                               # Backend (Node.js + Express)
+│   ├── database/
+│   │   └── init.sql                      # Esquema do banco de dados
+│   ├── src/
+│   │   ├── controllers/
+│   │   │   ├── authController.ts         # Lógica de autenticação
+│   │   │   └── evidenceController.ts     # Lógica de evidências (a ser criada)
+│   │   ├── lib/
+│   │   │   └── db.ts                     # Conexão com o banco de dados
+│   │   │   └── utils.ts                  # Funções utilitárias
+│   │   ├── routes/
+│   │   │   ├── auth.ts                   # Rotas de autenticação
+│   │   │   └── evidence.ts               # Rotas de evidências
+│   │   └── index.ts                      # Ponto de entrada do servidor
+│   ├── Dockerfile
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── shared/                               # Código compartilhado (constantes, tipos)
+│   └── const.ts
+│
+├── docs/                                 # Documentação técnica
+│   └── safehash_fluxo.drawio             # Diagrama de fluxo de negócio
+│
+├── docker-compose.yml                    # Orquestração de serviços Docker
+├── .env.example                          # Exemplo de variáveis de ambiente
+├── .gitignore
+├── package.json                          # Dependências gerais do projeto
+├── README.md                             # Este arquivo
+└── tsconfig.json
 ```
 
-## 🎨 Seções Implementadas
+## 🚀 Como Rodar Localmente
 
-### 1. Header
-- Navegação com dropdowns
-- Logo Exterro
-- Botões "Get Demo" e "Free Download"
-- Menu responsivo
+### Pré-requisitos
 
-### 2. Hero Section
-- Banner com imagem de fundo
-- Título e subtítulo
-- Botões de ação
-- Breadcrumb de categoria
+- [Docker](https://www.docker.com/get-started) e [Docker Compose](https://docs.docker.com/compose/install/) instalados.
 
-### 3. Features Section
-- Grid de 3 features principais
-- Ícones dinâmicos (Lucide)
-- Descrições
+- [Node.js](https://nodejs.org/en/download/) (versão 20 LTS ou superior) e [npm](https://www.npmjs.com/get-npm) (para desenvolvimento fora do container, se necessário).
 
-### 4. Capabilities Section
-- 7 capacidades detalhadas
-- Layout alternado (imagem + texto)
-- Descrições expandidas
+### Subindo tudo com Docker Compose
 
-### 5. Testimonial Section
-- Depoimento de cliente
-- Autor e cargo
-- Imagem de fundo
+1. **Clone o repositório:**
 
-### 6. FAQ Section
-- Accordion com 6 perguntas
-- Dados de `faq.json`
-- Animações suaves
+   ```bash
+   git clone https://github.com/seu-usuario/safehash.git
+   cd safehash
+   ```
 
-### 7. Resources Section
-- 3 tipos de recursos
-- Product Brief, Infographic, Whitepaper
-- Cards com descrição
+1. **Copie e configure as variáveis de ambiente:**
 
-### 8. Comparison Section
-- Comparação Free vs Pro
-- 3 casos de uso
-- CTA para versão Pro
+   ```bash
+   cp .env.example .env
+   ```
 
-### 9. CTA Section
-- Seção de conversão final
-- Botão de download
-- Mensagem de urgência
+   Edite o arquivo `.env` com suas configurações locais, como as credenciais do banco de dados e a chave secreta do JWT.
 
-### 10. Footer
-- Links de navegação
-- Informações legais
-- Copyright
+1. **Suba a infraestrutura e o backend:**
 
-## 📊 Dados Estruturados
+   ```bash
+   docker-compose up --build -d
+   ```
 
-Todos os dados estão em arquivos JSON em `client/src/data/`:
+   Este comando irá construir as imagens Docker (se necessário ), criar e iniciar os containers para o banco de dados MySQL e o serviço de backend.
 
-### features.json
-```json
-{
-  "features": [...],
-  "capabilities": [...]
-}
-```
+1. **Verifique se os containers estão rodando:**
 
-### faq.json
-```json
-{
-  "faqs": [...]
-}
-```
+   ```bash
+   docker-compose ps
+   ```
 
-### resources.json
-```json
-{
-  "resources": [...],
-  "useCases": [...]
-}
-```
+1. **Instale as dependências do frontend e inicie-o (em um terminal separado):**
 
-### config.json
-```json
-{
-  "app": {...},
-  "hero": {...},
-  "overview": {...},
-  "testimonial": {...},
-  "comparison": {...},
-  "footer": {...}
-}
-```
+   ```bash
+   cd client
+   npm install
+   npm run dev
+   ```
 
-## 🎨 Customização
+   O frontend estará disponível em `http://localhost:5173` (ou outra porta, conforme configurado pelo Vite ).
 
-### Modificar Cores
-Edite `client/src/index.css` para alterar a paleta de cores:
+### Serviços disponíveis após o `docker-compose up`:
 
-```css
-:root {
-  --primary: #0066CC;
-  --secondary: #F5F5F5;
-  --accent: #FF6B35;
-  /* ... outras cores */
-}
-```
+| Serviço | URL Local |
+| --- | --- |
+| Backend | `http://localhost:3000` |
+| MySQL | `localhost:3306` |
 
-### Modificar Conteúdo
-Edite os arquivos JSON em `client/src/data/`:
+## 🛡️ Segurança
 
-```json
-{
-  "features": [
-    {
-      "id": 1,
-      "title": "Seu título",
-      "description": "Sua descrição",
-      "icon": "IconName"
-    }
-  ]
-}
-```
+A segurança é uma preocupação central no SafeHash. As seguintes medidas foram implementadas:
 
-### Adicionar Componente
-1. Crie novo arquivo em `client/src/components/`
-2. Importe em `client/src/pages/Home.tsx`
-3. Adicione à página
+- **Senhas Hashed:** Todas as senhas de usuários são armazenadas usando bcrypt, um algoritmo de hash robusto, para proteger contra ataques de força bruta e vazamento de dados.
 
-### Adicionar Página
-1. Crie novo arquivo em `client/src/pages/`
-2. Adicione rota em `client/src/App.tsx`
+- **JWT:** Utilização de JSON Web Tokens para autenticação, garantindo que apenas usuários autorizados possam acessar recursos protegidos.
 
-## 🔧 Tecnologias
+- **Validação de Entrada:** Todas as entradas de usuário são validadas no backend para prevenir ataques como injeção SQL e XSS.
 
-| Tecnologia | Versão | Uso |
-|-----------|--------|-----|
-| React | 19.2.1 | Framework UI |
-| TypeScript | 5.6.3 | Type safety |
-| Tailwind CSS | 4.1.14 | Styling |
-| Vite | 7.1.7 | Build tool |
-| Wouter | 3.3.5 | Roteamento |
-| shadcn/ui | Latest | Componentes |
-| Lucide React | 0.453.0 | Ícones |
-| Framer Motion | 12.23.22 | Animações |
-| Sonner | 2.0.7 | Toasts |
+- **HTTPS:** Recomenda-se a utilização de HTTPS em ambiente de produção para criptografar a comunicação entre cliente e servidor.
 
-## 📱 Responsividade
+## 📈 Observabilidade
 
-Breakpoints Tailwind:
-- **sm**: 640px
-- **md**: 768px
-- **lg**: 1024px
-- **xl**: 1280px
-- **2xl**: 1536px
+Para garantir a saúde e o bom funcionamento do sistema, o SafeHash prevê a implementação de observabilidade através de:
 
-Todos os componentes são mobile-first e responsivos.
+- **Logs:** Geração de logs detalhados no backend para rastrear eventos importantes, erros e atividades do usuário. Isso facilita a depuração e a auditoria.
 
-## ♿ Acessibilidade
+- **Monitoramento:** Em um ambiente de produção, ferramentas de monitoramento seriam integradas para acompanhar métricas de desempenho, uso de recursos e disponibilidade do serviço.
 
-- Semântica HTML correta
-- ARIA labels onde necessário
-- Contraste de cores adequado
-- Navegação por teclado
-- Focus rings visíveis
-
-## 🚀 Deploy
-
-### Opção 1: Manus Hosting
-```bash
-# Criar checkpoint
-pnpm build
-
-# Publicar via UI Manus
-```
-
-### Opção 2: Vercel
-```bash
-npm install -g vercel
-vercel
-```
-
-### Opção 3: Netlify
-```bash
-npm install -g netlify-cli
-netlify deploy --prod --dir=dist
-```
-
-## 📚 Documentação
-
-- **ARCHITECTURE.md**: Visão geral da arquitetura
-- **COMPONENTS.md**: Documentação detalhada de componentes
-- **README.md**: Este arquivo
-
-## 🐛 Troubleshooting
-
-### Porta 3000 já está em uso
-```bash
-# Usar porta diferente
-pnpm dev -- --port 3001
-```
-
-### Estilos Tailwind não aplicam
-```bash
-# Limpar cache
-rm -rf node_modules/.vite
-pnpm dev
-```
-
-### Erro de TypeScript
-```bash
-# Verificar tipos
-pnpm check
-```
-
-## 📝 Scripts Disponíveis
-
-```bash
-pnpm dev          # Iniciar servidor de desenvolvimento
-pnpm build        # Build para produção
-pnpm preview      # Preview da build
-pnpm check        # Verificar tipos TypeScript
-pnpm format       # Formatar código com Prettier
-```
-
-## 🤝 Contribuindo
-
-Para modificar o projeto:
-
-1. Crie uma branch
-2. Faça suas alterações
-3. Teste localmente
-4. Commit com mensagens claras
-
-## 📄 Licença
-
-Este projeto é uma cópia educacional do site Exterro FTK Imager.
-
-## 🔗 Links Úteis
-
-- [React Docs](https://react.dev)
-- [Tailwind CSS](https://tailwindcss.com)
-- [shadcn/ui](https://ui.shadcn.com)
-- [TypeScript](https://www.typescriptlang.org)
-- [Vite](https://vitejs.dev)
-
-## 📧 Suporte
-
-Para dúvidas ou problemas, consulte:
-- ARCHITECTURE.md
-- COMPONENTS.md
-- Código comentado
-
-## ✨ Próximos Passos
-
-1. Personalizar com sua marca
-2. Adicionar mais páginas
-3. Integrar com backend (opcional)
-4. Adicionar dark mode
-5. Implementar analytics
-
----
-
-**Desenvolvido com ❤️ usando React + Tailwind CSS**
