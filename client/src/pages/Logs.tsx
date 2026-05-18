@@ -1,33 +1,48 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   ClipboardList, 
   ShieldCheck, 
-  User, 
   Calendar, 
   Search, 
   Download, 
   Filter,
-  FileText
+  FileText,
+  RefreshCw
 } from 'lucide-react';
 import DashboardHeader from '@/components/layout/DashboardHeader';
 import { Button } from '@/components/ui/button';
 
 export default function Logs() {
   const [searchTerm, setSearchTerm] = useState("");
-  
-  
-  const [logs] = useState([
-    { id: 1, action: "Registro de Evidência", user: "Luís Gustavo", detail: "Doc: contrato_digital_v1.pdf", date: "2026-04-03 22:15", type: "create" },
-    { id: 2, action: "Verificação de Hash", user: "Luís Gustavo", detail: "Integridade Confirmada (SHA-256)", date: "2026-04-03 22:18", type: "verify" },
-    { id: 3, action: "Login no Sistema", user: "Luís Gustavo", detail: "IP: 192.168.0.1 (Sessão Segura)", date: "2026-04-03 22:00", type: "system" },
-    { id: 4, action: "Exportação de Relatório", user: "Luís Gustavo", detail: "Relatório Mensal PDF", date: "2026-04-03 22:30", type: "system" },
-  ]);
+  const [logs, setLogs] = useState<any[]>([]); // Estado para os logs reais
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Lógica de filtro para a demonstração
+  // FUNÇÃO PARA BUSCAR OS LOGS REAIS DO BACKEND
+  const fetchLogs = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/evidence/logs' );
+      const data = await response.json();
+      if (response.ok) {
+        setLogs(data);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar logs de auditoria:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLogs();
+  }, []);
+
+  // Lógica de filtro dinâmica
   const filteredLogs = logs.filter(log => 
-    log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    log.detail.toLowerCase().includes(searchTerm.toLowerCase())
+    log.file_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    log.file_hash?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (log.is_valid ? 'sucesso' : 'falha').includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -50,8 +65,8 @@ export default function Logs() {
           </div>
           
           <div className="flex gap-2">
-            <Button variant="outline" className="flex items-center gap-2 border-slate-300">
-              <Download size={16} /> Exportar PDF
+            <Button onClick={fetchLogs} variant="outline" className="flex items-center gap-2 border-slate-300">
+              <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} /> Atualizar
             </Button>
             <Button className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2">
               <FileText size={16} /> Relatório Full
@@ -59,32 +74,29 @@ export default function Logs() {
           </div>
         </div>
 
-        {/* Barra de Filtros (Destaque para o TCC) */}
+        {/* Barra de Filtros */}
         <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row gap-4 items-center">
           <div className="relative flex-1 w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               type="text" 
-              placeholder="Filtrar por ação ou detalhe do arquivo..." 
+              placeholder="Filtrar por nome do arquivo ou hash..." 
               className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button variant="ghost" className="text-slate-500 flex items-center gap-2">
-            <Filter size={16} /> Filtros Avançados
-          </Button>
         </div>
 
-        {/* Tabela de Auditoria */}
+        {/* Tabela de Auditoria Real */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead className="bg-slate-50/80 text-slate-500 font-bold text-[10px] uppercase tracking-wider">
                 <tr>
                   <th className="px-6 py-4">Evento / Ação</th>
-                  <th className="px-6 py-4">Operador</th>
-                  <th className="px-6 py-4">Detalhes</th>
+                  <th className="px-6 py-4">Arquivo Relacionado</th>
+                  <th className="px-6 py-4">Status de Integridade</th>
                   <th className="px-6 py-4 text-right">Timestamp (BRT)</th>
                 </tr>
               </thead>
@@ -93,50 +105,49 @@ export default function Logs() {
                   <tr key={log.id} className="hover:bg-blue-50/30 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className={`p-1.5 rounded-md ${
-                          log.type === 'create' ? 'bg-green-100 text-green-600' : 
-                          log.type === 'verify' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-600'
-                        }`}>
+                        <div className={`p-1.5 rounded-md ${log.is_valid ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'}`}>
                           <ShieldCheck size={14} />
                         </div>
-                        <span className="font-bold text-slate-700">{log.action}</span>
+                        <span className="font-bold text-slate-700">Verificação de Hash</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2 text-slate-600">
-                        <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-[10px] font-bold">
-                          {log.user.split(' ').map(n => n[0]).join('')}
-                        </div>
-                        {log.user}
+                      <div className="flex flex-col">
+                        <span className="text-slate-700 font-medium">{log.file_name}</span>
+                        <span className="text-[10px] text-slate-400 font-mono truncate max-w-[200px]">{log.file_hash}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-slate-500 font-medium">
-                      {log.detail}
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${
+                        log.is_valid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                      }`}>
+                        {log.is_valid ? 'Integridade Confirmada' : 'Falha na Integridade'}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-right text-slate-400 font-mono text-xs">
-                      {log.date}
+                    <td className="px-6 py-4 text-right text-slate-500 font-mono text-xs">
+                      {new Date(log.verified_at).toLocaleString('pt-BR')}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
             
-            {filteredLogs.length === 0 && (
+            {filteredLogs.length === 0 && !isLoading && (
               <div className="p-12 text-center text-slate-400">
-                Nenhum registro encontrado para sua busca.
+                Nenhum registro de auditoria encontrado no banco.
               </div>
             )}
           </div>
         </div>
 
-        {/* Footer Técnico (Fundamental para ADS) */}
+        {/* Footer Técnico */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-start gap-3">
             <ShieldCheck className="text-emerald-600 mt-1" size={20} />
             <div>
-              <p className="text-sm font-bold text-emerald-900">Integridade de Log</p>
+              <p className="text-sm font-bold text-emerald-900">Integridade de Log Imutável</p>
               <p className="text-xs text-emerald-700 leading-relaxed">
-                Cada entrada de auditoria gera um checkpoint no banco de dados, garantindo que o histórico de custódia não seja deletado ou alterado.
+                Cada verificação realizada pelo sistema gera um checkpoint automático nesta trilha, garantindo a transparência da cadeia de custódia.
               </p>
             </div>
           </div>
@@ -144,9 +155,9 @@ export default function Logs() {
           <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-3">
             <Calendar className="text-blue-600 mt-1" size={20} />
             <div>
-              <p className="text-sm font-bold text-blue-900">Retenção de Dados</p>
+              <p className="text-sm font-bold text-blue-900">Conformidade ISO 27037</p>
               <p className="text-xs text-blue-700 leading-relaxed">
-                Período de retenção configurado para 5 anos, em conformidade com as normas vigentes de perícia forense digital.
+                Este registro de auditoria atende aos requisitos de rastreabilidade exigidos pelas normas internacionais de perícia forense.
               </p>
             </div>
           </div>
