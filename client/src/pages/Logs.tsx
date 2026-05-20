@@ -5,30 +5,32 @@ import {
   ShieldCheck, 
   Calendar, 
   Search, 
-  Download, 
-  Filter,
-  FileText,
-  RefreshCw
+  RefreshCw,
+  FileText
 } from 'lucide-react';
 import DashboardHeader from '@/components/layout/DashboardHeader';
 import { Button } from '@/components/ui/button';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export default function Logs() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [logs, setLogs] = useState<any[]>([]); // Estado para os logs reais
+  const [logs, setLogs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // FUNÇÃO PARA BUSCAR OS LOGS REAIS DO BACKEND
   const fetchLogs = async () => {
+    const userId = localStorage.getItem('userId');
+    if (!userId) return;
+
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/evidence/logs' );
+      const response = await fetch(`http://localhost:5000/api/evidence/logs?userId=${userId}` );
       const data = await response.json();
       if (response.ok) {
         setLogs(data);
       }
     } catch (error) {
-      console.error("Erro ao buscar logs de auditoria:", error);
+      console.error("Erro ao buscar logs:", error);
     } finally {
       setIsLoading(false);
     }
@@ -38,128 +40,135 @@ export default function Logs() {
     fetchLogs();
   }, []);
 
-  // Lógica de filtro dinâmica
+  const generateFullReport = () => {
+    const doc = new jsPDF();
+    const userName = localStorage.getItem('userName') || 'Perito';
+    
+    doc.setFillColor(15, 23, 42);
+    doc.rect(0, 0, 210, 40, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.text('RELATÓRIO DE AUDITORIA DE CUSTÓDIA', 105, 20, { align: 'center' });
+    doc.setFontSize(10);
+    doc.text(`EMISSOR: ${userName.toUpperCase()}`, 105, 30, { align: 'center' });
+
+    autoTable(doc, {
+      startY: 45,
+      head: [['Data/Hora', 'Arquivo', 'Status', 'Perito']],
+      body: logs.map(log => [
+        new Date(log.verified_at).toLocaleString('pt-BR'),
+        log.file_name,
+        log.is_valid ? 'VÁLIDO' : 'INVÁLIDO',
+        log.perito_name
+      ]),
+      headStyles: { fillColor: [15, 23, 42] }
+    });
+
+    doc.save('Relatorio_Auditoria_SafeHash.pdf');
+  };
+
   const filteredLogs = logs.filter(log => 
-    log.file_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    log.file_hash?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (log.is_valid ? 'sucesso' : 'falha').includes(searchTerm.toLowerCase())
+    log.file_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    log.file_hash.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
+    <div className="min-h-screen bg-slate-50 pb-12">
       <DashboardHeader />
-
       <motion.div 
-        initial={{ opacity: 0, y: 10 }} 
-        animate={{ opacity: 1, y: 0 }} 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
         className="max-w-7xl mx-auto p-6 lg:p-8"
       >
-        {/* Header da Página */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-              <ClipboardList className="text-blue-600" size={28} />
-              Trilha de Auditoria
+            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
+              <ClipboardList className="text-blue-600" /> Trilha de Auditoria
             </h1>
-            <p className="text-slate-500 text-sm italic">Cadeia de custódia e logs de eventos do SafeHash</p>
+            <p className="text-slate-500 mt-1 text-sm">Registro imutável de todas as verificações de integridade.</p>
           </div>
           
-          <div className="flex gap-2">
-            <Button onClick={fetchLogs} variant="outline" className="flex items-center gap-2 border-slate-300">
-              <RefreshCw size={16} className={isLoading ? 'animate-spin' : ''} /> Atualizar
-            </Button>
-            <Button className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2">
-              <FileText size={16} /> Relatório Full
-            </Button>
-          </div>
+          <Button 
+            onClick={generateFullReport}
+            className="bg-slate-900 hover:bg-slate-800 text-white flex items-center gap-2 px-6 py-6 rounded-xl shadow-lg shadow-slate-200 transition-all"
+          >
+            <FileText size={18} />
+            Gerar Relatório Full
+          </Button>
         </div>
 
-        {/* Barra de Filtros */}
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex flex-col md:flex-row gap-4 items-center">
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-            <input 
-              type="text" 
-              placeholder="Filtrar por nome do arquivo ou hash..." 
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
-
-        {/* Tabela de Auditoria Real */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <input 
+                type="text" 
+                placeholder="Filtrar por nome do arquivo ou hash..." 
+                className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <button 
+              onClick={fetchLogs}
+              className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+            >
+              <RefreshCw size={20} className={isLoading ? "animate-spin" : ""} />
+            </button>
+          </div>
+
           <div className="overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-slate-50/80 text-slate-500 font-bold text-[10px] uppercase tracking-wider">
+              <thead className="bg-slate-50 text-slate-500 font-bold text-[11px] uppercase tracking-widest">
                 <tr>
-                  <th className="px-6 py-4">Evento / Ação</th>
-                  <th className="px-6 py-4">Arquivo Relacionado</th>
-                  <th className="px-6 py-4">Status de Integridade</th>
-                  <th className="px-6 py-4 text-right">Timestamp (BRT)</th>
+                  <th className="px-6 py-4">Evento / Timestamp</th>
+                  <th className="px-6 py-4">Arquivo / Evidência</th>
+                  <th className="px-6 py-4">Responsável</th>
+                  <th className="px-6 py-4">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-sm">
-                {filteredLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-blue-50/30 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-1.5 rounded-md ${log.is_valid ? 'bg-blue-100 text-blue-600' : 'bg-red-100 text-red-600'}`}>
-                          <ShieldCheck size={14} />
-                        </div>
-                        <span className="font-bold text-slate-700">Verificação de Hash</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-col">
-                        <span className="text-slate-700 font-medium">{log.file_name}</span>
-                        <span className="text-[10px] text-slate-400 font-mono truncate max-w-[200px]">{log.file_hash}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${
-                        log.is_valid ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                      }`}>
-                        {log.is_valid ? 'Integridade Confirmada' : 'Falha na Integridade'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-right text-slate-500 font-mono text-xs">
-                      {new Date(log.verified_at).toLocaleString('pt-BR')}
-                    </td>
+              <tbody className="divide-y divide-slate-100">
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-12 text-center text-slate-400 italic">Carregando registros...</td>
                   </tr>
-                ))}
+                ) : filteredLogs.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-12 text-center text-slate-400 italic">Nenhum log encontrado.</td>
+                  </tr>
+                ) : (
+                  filteredLogs.map((log) => (
+                    <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <p className="text-xs font-bold text-slate-700">{new Date(log.verified_at).toLocaleString('pt-BR')}</p>
+                        <p className="text-[10px] text-slate-400 font-mono mt-0.5">IP: {log.ip_address}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="text-xs font-bold text-slate-700">{log.file_name}</p>
+                        <p className="text-[10px] text-blue-500 font-mono truncate max-w-[200px]">{log.file_hash}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="h-6 w-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600">
+                            {log.perito_name?.split(' ').map((n:any) => n[0]).join('').slice(0,2)}
+                          </div>
+                          <p className="text-xs font-medium text-slate-600">{log.perito_name}</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`text-[9px] px-2 py-1 rounded-full font-bold uppercase ${
+                          log.is_valid 
+                            ? "bg-emerald-100 text-emerald-700" 
+                            : "bg-red-100 text-red-700"
+                        }`}>
+                          {log.is_valid ? "Válido" : "Inválido"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
-            
-            {filteredLogs.length === 0 && !isLoading && (
-              <div className="p-12 text-center text-slate-400">
-                Nenhum registro de auditoria encontrado no banco.
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Footer Técnico */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-start gap-3">
-            <ShieldCheck className="text-emerald-600 mt-1" size={20} />
-            <div>
-              <p className="text-sm font-bold text-emerald-900">Integridade de Log Imutável</p>
-              <p className="text-xs text-emerald-700 leading-relaxed">
-                Cada verificação realizada pelo sistema gera um checkpoint automático nesta trilha, garantindo a transparência da cadeia de custódia.
-              </p>
-            </div>
-          </div>
-          
-          <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl flex items-start gap-3">
-            <Calendar className="text-blue-600 mt-1" size={20} />
-            <div>
-              <p className="text-sm font-bold text-blue-900">Conformidade ISO 27037</p>
-              <p className="text-xs text-blue-700 leading-relaxed">
-                Este registro de auditoria atende aos requisitos de rastreabilidade exigidos pelas normas internacionais de perícia forense.
-              </p>
-            </div>
           </div>
         </div>
       </motion.div>

@@ -61,9 +61,7 @@ export default function Login() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     const updatedValue = name === 'cpf' ? formatCPF(value) : value;
-    
     setFormData({ ...formData, [name]: updatedValue });
-
     if (errors[name as keyof FormErrors]) {
       setErrors({ ...errors, [name]: '' });
     }
@@ -72,19 +70,11 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: FormErrors = {};
-
     const emailErr = getEmailError(formData.email);
     if (emailErr) newErrors.email = emailErr;
-
-    if (!formData.cpf || !validateCPF(formData.cpf)) {
-      newErrors.cpf = 'CPF inválido';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Senha é obrigatória';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'A senha deve ter no mínimo 6 caracteres';
-    }
+    if (!formData.cpf || !validateCPF(formData.cpf)) newErrors.cpf = 'CPF inválido';
+    if (!formData.password) newErrors.password = 'Senha é obrigatória';
+    else if (formData.password.length < 6) newErrors.password = 'A senha deve ter no mínimo 6 caracteres';
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -93,7 +83,6 @@ export default function Login() {
 
     setIsLoading(true);
     try {
-      
       const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -101,22 +90,27 @@ export default function Login() {
           email: formData.email,
           cpf: formData.cpf,
           password: formData.password
-        }),
+        } ),
       });
 
       const data = await response.json();
 
       if (response.ok) {
         setSubmitted(true);
-        // Opcional: Salvar o token no localStorage para manter a sessão
+        // SALVANDO DADOS NO LOCALSTORAGE
         if (data.token) localStorage.setItem('token', data.token);
+        if (data.user) {
+          localStorage.setItem('userId', data.user.id.toString());
+          localStorage.setItem('userName', data.user.full_name);
+          localStorage.setItem('userEmail', data.user.email);
+        }
         
         setTimeout(() => setLocation('/dashboard'), 1500); 
       } else {
         alert(data.error || "Credenciais inválidas.");
       }
     } catch (error) {
-      alert("Servidor SafeHash offline na porta 5000. Verifique o terminal.");
+      alert("Servidor SafeHash offline.");
     } finally {
       setIsLoading(false);
     }
@@ -124,7 +118,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center py-12 px-4">
-      
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(68,68,68,.2)_25%,rgba(68,68,68,.2)_50%,transparent_50%,transparent_75%,rgba(68,68,68,.2)_75%,rgba(68,68,68,.2))] bg-[length:40px_40px]"></div>
       </div>
@@ -254,15 +247,6 @@ export default function Login() {
               Registre-se aqui
             </button>
           </p>
-        </div>
-
-        <div className="text-center mt-6">
-          <button
-            onClick={() => setLocation('/')}
-            className="text-gray-300 hover:text-white transition-colors text-sm"
-          >
-            ← Voltar para home
-          </button>
         </div>
       </motion.div>
     </div>

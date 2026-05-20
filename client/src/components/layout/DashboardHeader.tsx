@@ -1,20 +1,58 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '../ui/button'; 
 import { 
   Shield, 
   LogOut, 
-  Database,
   ChevronDown,
   LayoutDashboard,
   FileSearch,
-  ClipboardList,
-  UserCircle 
+  ClipboardList
 } from 'lucide-react';
 import { useLocation } from 'wouter';
 
 export default function DashboardHeader() {
   const [location, setLocation] = useLocation();
-  const [isDbOnline] = useState(true);
+  const [userName, setUserName] = useState('Usuário');
+  const [userInitials, setUserInitials] = useState('US');
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const userId = localStorage.getItem('userId');
+      if (!userId) return;
+
+      try {
+        const response = await fetch(`http://localhost:5000/api/auth/profile?userId=${userId}` );
+        const data = await response.json();
+        if (response.ok && data.full_name) {
+          setUserName(data.full_name);
+          
+          // Gera as iniciais dinamicamente (Ex: João Silva -> JS)
+          const initials = data.full_name
+            .split(' ')
+            .map((n: string) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+          setUserInitials(initials);
+          
+          // Sincroniza o localStorage para redundância
+          localStorage.setItem('userName', data.full_name);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar dados do cabeçalho:", error);
+        // Fallback: tenta usar o que já está no localStorage se a rede falhar
+        const savedName = localStorage.getItem('userName');
+        if (savedName) setUserName(savedName);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    setLocation('/');
+  };
 
   const isActive = (path: string) => location === path;
 
@@ -22,7 +60,7 @@ export default function DashboardHeader() {
     <header className="bg-white border-b sticky top-0 z-50 w-full shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         
-        
+        {/* Logo SafeHash */}
         <div className="flex items-center gap-4">
           <div 
             className="flex items-center gap-2 cursor-pointer group"
@@ -38,7 +76,7 @@ export default function DashboardHeader() {
           </div>
         </div>
 
-        
+        {/* Navegação Principal */}
         <nav className="flex items-center gap-1 md:gap-2">
           <button 
             onClick={() => setLocation('/dashboard')}
@@ -77,9 +115,8 @@ export default function DashboardHeader() {
           </button>
         </nav>
 
-       
+        {/* Perfil e Logout */}
         <div className="flex items-center gap-2 lg:gap-4">
-          
           <div className="hidden xl:flex items-center gap-2 px-2 py-1 bg-emerald-50 border border-emerald-100 rounded-md">
             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
             <span className="text-[9px] font-bold text-emerald-700 uppercase tracking-widest">Online</span>
@@ -87,7 +124,6 @@ export default function DashboardHeader() {
 
           <div className="h-6 w-[1px] bg-slate-200 mx-1 hidden md:block"></div>
 
-          
           <div className="flex items-center gap-3">
             <div 
               onClick={() => setLocation('/profile')}
@@ -96,10 +132,10 @@ export default function DashboardHeader() {
               }`}
             >
               <div className="h-8 w-8 rounded-full bg-blue-600 border border-white shadow flex items-center justify-center text-white text-[10px] font-bold">
-                LG
+                {userInitials}
               </div>
               <div className="hidden md:flex flex-col items-start leading-tight">
-                <span className="text-[11px] font-bold text-slate-800">Luís Gustavo</span>
+                <span className="text-[11px] font-bold text-slate-800">{userName}</span>
                 <span className="text-[9px] text-slate-500 font-medium">Ver Perfil</span>
               </div>
               <ChevronDown size={12} className="text-slate-400 hidden md:block" />
@@ -109,7 +145,7 @@ export default function DashboardHeader() {
               variant="ghost" 
               size="icon" 
               className="text-slate-400 hover:text-red-600 hover:bg-red-50"
-              onClick={() => setLocation('/')}
+              onClick={handleLogout}
               title="Sair"
             >
               <LogOut size={18} />

@@ -1,9 +1,7 @@
 import { Router } from 'express';
-import { register, login } from '../controllers/authController.ts';
-
+import { register, login, getProfile } from '../controllers/authController.ts';
 const router = Router();
-
 router.post('/register', register);
 router.post('/login', login);
-
+router.get('/profile', getProfile);
 export default router;
