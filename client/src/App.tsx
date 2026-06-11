@@ -12,6 +12,7 @@ import Verify from "./pages/Verify";
 import Logs from "./pages/Logs";
 import Profile from "./pages/Profile"; 
 
+
 // Importando os novos componentes de seção para as rotas públicas
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -56,6 +57,7 @@ function Router() {
       {/* Rotas de Autenticação */}
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
+    
       
       {/* Rotas Internas (Dashboard) */}
       <Route path="/dashboard" component={Dashboard} /> 

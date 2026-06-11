@@ -1,148 +1,134 @@
 import db from '../lib/db.ts';
 
-export const registerHash = async (req, res) => {
+/**
+ * REGISTRAR EVIDÊNCIA (Cadeia de Custódia)
+ * Salva o hash e todos os metadados forenses
+ */
+export const registerEvidence = async (req: any, res: any) => {
   const {
-    userId,
-    fileName,
-    fileHash,
-    fileSize,
-    mimeType,
-    exifMetadata,
-    gpsLocation,
-    clientName,
-    professionalTitle,
-    professionalRegistry,
-    professionalId,
+    userId, fileName, fileHash, fileSize, mimeType,
+    exifMetadata, gpsLocation, clientName, professionalTitle,
+    professionalRegistry, professionalId, description
   } = req.body;
 
+  console.log(`[Evidence] Registrando nova evidência para o usuário: ${userId}`);
+
   if (!userId || !fileName || !fileHash) {
-    return res.status(400).json({ error: 'Dados incompletos para a custódia.' });
+    return res.status(400).json({ error: 'Dados obrigatórios ausentes (userId, fileName ou fileHash).' });
   }
 
-  const finalProfessionalTitle = professionalTitle || 'Perito';
-  const finalProfessionalRegistry = professionalRegistry || professionalId || null;
-  const finalClientName = clientName && String(clientName).trim() ? clientName : 'Sem cliente informado';
-  const timestampSignature = `ON-MCTI-${Date.now()}`;
-
   try {
+    const timestampSignature = `SAFEHASH-AUTH-${Date.now()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
+    
     const sql = `
       INSERT INTO evidences (
-        user_id,
-        file_name,
-        file_hash,
-        file_size,
-        mime_type,
-        exif_metadata,
-        timestamp_signature,
-        gps_location,
-        client_name,
-        professional_title,
-        professional_registry,
-        iso_compliance
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        user_id, file_name, file_hash, file_size, mime_type,
+        description, exif_metadata, timestamp_signature, gps_location, 
+        client_name, professional_title, professional_registry, 
+        professional_id, iso_compliance
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
     `;
 
     const [result]: any = await db.execute(sql, [
-      userId,
-      fileName,
-      fileHash,
-      fileSize || 0,
-      mimeType || 'application/octet-stream',
-      JSON.stringify(exifMetadata || {}),
-      timestampSignature,
-      gpsLocation || null,
-      finalClientName,
-      finalProfessionalTitle,
-      finalProfessionalRegistry,
-      1,
+      userId, fileName, fileHash, fileSize || 0, mimeType || 'application/octet-stream',
+      description || null, JSON.stringify(exifMetadata || {}), timestampSignature, 
+      gpsLocation || null, clientName || 'Não Informado', 
+      professionalTitle || 'Perito Forense', professionalRegistry || null,
+      professionalId || null
     ]);
 
+    console.log(`[Evidence] Sucesso! ID Gerado: ${result.insertId}`);
     return res.status(201).json({
-      message: 'Evidência registrada com sucesso!',
+      message: 'Custódia realizada com sucesso!',
       id: result.insertId,
-      hash: fileHash,
-      professional_title: finalProfessionalTitle,
-      professional_registry: finalProfessionalRegistry,
+      signature: timestampSignature
     });
   } catch (error) {
-    console.error('Erro ao salvar evidência no MySQL:', error);
-    return res.status(500).json({ error: 'Erro ao salvar evidência no banco.' });
+    console.error('[Evidence] Erro Crítico no MySQL:', error);
+    return res.status(500).json({ error: 'Erro interno ao salvar evidência no banco de dados.' });
   }
 };
 
-export const listEvidences = async (req, res) => {
+/**
+ * LISTAR EVIDÊNCIAS
+ */
+export const listEvidences = async (req: any, res: any) => {
   const { userId } = req.query;
-
-  if (!userId) {
-    return res.status(400).json({ error: 'Usuário não informado.' });
-  }
+  if (!userId) return res.status(400).json({ error: 'userId é necessário.' });
 
   try {
-    const sql = `
-      SELECT
-        e.id,
-        e.user_id,
-        e.file_name,
-        e.file_hash,
-        e.file_size,
-        e.mime_type,
-        e.description,
-        e.created_at,
-        e.exif_metadata,
-        e.timestamp_signature,
-        e.gps_location,
-        e.iso_compliance,
-        e.client_name,
-        e.professional_title,
-        e.professional_registry,
-        e.professional_id,
-        u.full_name AS perito_name
-      FROM evidences e
-      JOIN users u ON u.id = e.user_id
-      WHERE e.user_id = ?
-      ORDER BY e.created_at DESC
-    `;
-
-    const [rows]: any = await db.execute(sql, [userId]);
+    const [rows]: any = await db.execute(
+      'SELECT * FROM evidences WHERE user_id = ? ORDER BY created_at DESC',
+      [userId]
+    );
     return res.status(200).json(rows);
   } catch (error) {
-    console.error('Erro ao buscar evidências:', error);
+    console.error('[Evidence] Erro ao listar:', error);
     return res.status(500).json({ error: 'Erro ao buscar histórico.' });
   }
 };
 
-export const listLogs = async (req, res) => {
-  const { userId } = req.query;
+/**
+ * VERIFICAR INTEGRIDADE (Gera o Log de Auditoria)
+ */
+export const verifyIntegrity = async (req: any, res: any) => {
+  const { currentHash, originalHash, ip } = req.body;
 
-  if (!userId) {
-    return res.status(400).json({ error: 'Usuário não informado.' });
+  if (!currentHash || !originalHash) {
+    return res.status(400).json({ error: 'Hashes para comparação não fornecidos.' });
   }
 
   try {
+    const [rows]: any = await db.execute(
+      'SELECT id, file_name FROM evidences WHERE file_hash = ?',
+      [originalHash]
+    );
+
+    if (!rows || rows.length === 0) {
+      return res.status(404).json({ error: 'Hash original não encontrado na base de dados.' });
+    }
+
+    const evidenceId = rows[0].id;
+    const isValid = originalHash.toLowerCase() === currentHash.toLowerCase();
+
+    // REGISTRA NA TABELA DE AUDITORIA
+    await db.execute(
+      'INSERT INTO verification_logs (evidence_id, is_valid, ip_address) VALUES (?, ?, ?)',
+      [evidenceId, isValid, ip || req.ip || '127.0.0.1']
+    );
+
+    return res.status(200).json({
+      valid: isValid,
+      fileName: rows[0].file_name,
+      message: isValid ? 'Integridade Confirmada' : 'Alerta de Violação'
+    });
+  } catch (error) {
+    console.error('[Verify] Erro:', error);
+    return res.status(500).json({ error: 'Erro ao processar verificação.' });
+  }
+};
+
+/**
+ * LISTAR LOGS DE AUDITORIA
+ */
+export const listLogs = async (req: any, res: any) => {
+  const { userId } = req.query;
+  if (!userId) return res.status(400).json({ error: 'userId não informado.' });
+
+  try {
     const sql = `
-      SELECT
-        vl.id,
-        vl.evidence_id,
-        vl.verified_at,
-        vl.is_valid,
-        vl.ip_address,
-        e.file_name,
-        e.file_hash,
-        e.client_name,
-        e.professional_title,
-        e.professional_registry,
-        u.full_name AS perito_name
+      SELECT vl.*, e.file_name, e.file_hash, e.client_name 
       FROM verification_logs vl
       JOIN evidences e ON e.id = vl.evidence_id
-      JOIN users u ON u.id = e.user_id
       WHERE e.user_id = ?
       ORDER BY vl.verified_at DESC
     `;
-
     const [rows]: any = await db.execute(sql, [userId]);
     return res.status(200).json(rows);
   } catch (error) {
-    console.error('Erro ao buscar logs:', error);
-    return res.status(500).json({ error: 'Erro ao buscar logs.' });
+    console.error('[Logs] Erro:', error);
+    return res.status(500).json([]);
   }
 };
+
+export const registerHash = registerEvidence;

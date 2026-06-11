@@ -6,6 +6,7 @@ import cors from "cors";
 import authRoutes from "./src/routes/auth.ts";
 import evidenceRoutes from './src/routes/evidence.ts';
 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

@@ -1,177 +1,157 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ClipboardList, 
-  ShieldCheck, 
-  Calendar, 
-  Search, 
-  RefreshCw,
-  FileText
+  ClipboardList, CheckCircle, XCircle, Calendar, 
+  Search, ShieldCheck, Filter, ArrowUpDown, FileText
 } from 'lucide-react';
 import DashboardHeader from '@/components/layout/DashboardHeader';
 import { Button } from '@/components/ui/button';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 export default function Logs() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [logs, setLogs] = useState<any[]>([]);
+  const [logs, setLogs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  const fetchLogs = async () => {
-    const userId = localStorage.getItem('userId');
-    if (!userId) return;
-
-    setIsLoading(true);
-    try {
-      const response = await fetch(`http://localhost:5000/api/evidence/logs?userId=${userId}` );
-      const data = await response.json();
-      if (response.ok) {
-        setLogs(data);
-      }
-    } catch (error) {
-      console.error("Erro ao buscar logs:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
+    const fetchLogs = async () => {
+      const userId = localStorage.getItem('userId');
+      if (!userId) return;
+
+      try {
+        const response = await fetch(`http://localhost:5000/api/evidence/logs?userId=${userId}` );
+        const data = await response.json();
+        if (response.ok) setLogs(data);
+      } catch (error) {
+        console.error("Erro ao buscar auditoria:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     fetchLogs();
   }, []);
 
-  const generateFullReport = () => {
-    const doc = new jsPDF();
-    const userName = localStorage.getItem('userName') || 'Perito';
-    
-    doc.setFillColor(15, 23, 42);
-    doc.rect(0, 0, 210, 40, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18);
-    doc.text('RELATÓRIO DE AUDITORIA DE CUSTÓDIA', 105, 20, { align: 'center' });
-    doc.setFontSize(10);
-    doc.text(`EMISSOR: ${userName.toUpperCase()}`, 105, 30, { align: 'center' });
-
-    autoTable(doc, {
-      startY: 45,
-      head: [['Data/Hora', 'Arquivo', 'Status', 'Perito']],
-      body: logs.map(log => [
-        new Date(log.verified_at).toLocaleString('pt-BR'),
-        log.file_name,
-        log.is_valid ? 'VÁLIDO' : 'INVÁLIDO',
-        log.perito_name
-      ]),
-      headStyles: { fillColor: [15, 23, 42] }
-    });
-
-    doc.save('Relatorio_Auditoria_SafeHash.pdf');
-  };
-
-  const filteredLogs = logs.filter(log => 
+  const filteredLogs = logs.filter((log: any) => 
     log.file_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     log.file_hash.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-12">
+    <div className="min-h-screen bg-slate-50">
       <DashboardHeader />
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="max-w-7xl mx-auto p-6 lg:p-8"
-      >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10"
+        >
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 flex items-center gap-3">
-              <ClipboardList className="text-blue-600" /> Trilha de Auditoria
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+              <ClipboardList className="text-blue-600" size={32} />
+              Trilha de Auditoria
             </h1>
-            <p className="text-slate-500 mt-1 text-sm">Registro imutável de todas as verificações de integridade.</p>
+            <p className="text-slate-500 mt-1">Monitoramento de integridade e registros de acesso forense.</p>
           </div>
-          
-          <Button 
-            onClick={generateFullReport}
-            className="bg-slate-900 hover:bg-slate-800 text-white flex items-center gap-2 px-6 py-6 rounded-xl shadow-lg shadow-slate-200 transition-all"
-          >
-            <FileText size={18} />
-            Gerar Relatório Full
-          </Button>
-        </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input 
-                type="text" 
-                placeholder="Filtrar por nome do arquivo ou hash..." 
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
+                type="text"
+                placeholder="Buscar arquivo ou hash..."
+                className="pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl w-full md:w-80 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all shadow-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button 
-              onClick={fetchLogs}
-              className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-            >
-              <RefreshCw size={20} className={isLoading ? "animate-spin" : ""} />
-            </button>
+            <Button variant="outline" className="rounded-xl gap-2">
+              <Filter size={18} /> Filtrar
+            </Button>
           </div>
+        </motion.div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead className="bg-slate-50 text-slate-500 font-bold text-[11px] uppercase tracking-widest">
-                <tr>
-                  <th className="px-6 py-4">Evento / Timestamp</th>
-                  <th className="px-6 py-4">Arquivo / Evidência</th>
-                  <th className="px-6 py-4">Responsável</th>
-                  <th className="px-6 py-4">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {isLoading ? (
-                  <tr>
-                    <td colSpan={4} className="px-6 py-12 text-center text-slate-400 italic">Carregando registros...</td>
-                  </tr>
-                ) : filteredLogs.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="px-6 py-12 text-center text-slate-400 italic">Nenhum log encontrado.</td>
-                  </tr>
-                ) : (
-                  filteredLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <p className="text-xs font-bold text-slate-700">{new Date(log.verified_at).toLocaleString('pt-BR')}</p>
-                        <p className="text-[10px] text-slate-400 font-mono mt-0.5">IP: {log.ip_address}</p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <p className="text-xs font-bold text-slate-700">{log.file_name}</p>
-                        <p className="text-[10px] text-blue-500 font-mono truncate max-w-[200px]">{log.file_hash}</p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <div className="h-6 w-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-bold text-slate-600">
-                            {log.perito_name?.split(' ').map((n:any) => n[0]).join('').slice(0,2)}
-                          </div>
-                          <p className="text-xs font-medium text-slate-600">{log.perito_name}</p>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`text-[9px] px-2 py-1 rounded-full font-bold uppercase ${
-                          log.is_valid 
-                            ? "bg-emerald-100 text-emerald-700" 
-                            : "bg-red-100 text-red-700"
-                        }`}>
-                          {log.is_valid ? "Válido" : "Inválido"}
-                        </span>
-                      </td>
+        <AnimatePresence mode="wait">
+          {isLoading ? (
+            <motion.div key="loading" className="flex flex-col items-center justify-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+              <p className="text-slate-500 font-medium">Sincronizando registros...</p>
+            </motion.div>
+          ) : filteredLogs.length > 0 ? (
+            <motion.div 
+              key="table"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden"
+            >
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="bg-slate-50/50 border-b border-slate-200">
+                      <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest">Status</th>
+                      <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest">Evidência</th>
+                      <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest">Hash de Origem</th>
+                      <th className="px-6 py-5 text-xs font-bold text-slate-500 uppercase tracking-widest">Data/Hora</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </motion.div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredLogs.map((log: any) => (
+                      <tr key={log.id} className="hover:bg-blue-50/30 transition-colors group">
+                        <td className="px-6 py-5">
+                          {log.is_valid ? (
+                            <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 w-fit">
+                              <CheckCircle size={16} />
+                              <span className="text-xs font-bold">Íntegro</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 text-red-600 bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 w-fit">
+                              <XCircle size={16} />
+                              <span className="text-xs font-bold">Violado</span>
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-blue-100 transition-colors">
+                              <FileText size={18} className="text-slate-500 group-hover:text-blue-600" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-bold text-slate-900">{log.file_name}</span>
+                              <span className="text-[11px] text-slate-400">ID: #{log.evidence_id}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <code className="text-[11px] bg-slate-100 px-2 py-1 rounded text-slate-600 font-mono">
+                            {log.file_hash.substring(0, 16)}...
+                          </code>
+                        </td>
+                        <td className="px-6 py-5 text-sm text-slate-600 font-medium">
+                          {new Date(log.verified_at).toLocaleString('pt-BR')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="empty"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-3xl border-2 border-dashed border-slate-200 p-20 text-center"
+            >
+              <div className="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
+                <ShieldCheck className="text-blue-200" size={40} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Sem registros de auditoria</h3>
+              <p className="text-slate-500 max-w-sm mx-auto">
+                Realize uma verificação de integridade no módulo "Verificador" para gerar os primeiros logs.
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
     </div>
   );
 }

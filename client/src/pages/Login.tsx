@@ -4,113 +4,64 @@ import { Button } from '@/components/ui/button';
 import { Mail, Lock, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-interface FormErrors {
-  email?: string;
-  cpf?: string;
-  password?: string;
-}
-
 export default function Login() {
   const [, setLocation] = useLocation();
-  const [formData, setFormData] = useState({
-    email: '',
-    cpf: '',
-    password: '',
-  });
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [formData, setFormData] = useState({ email: '', cpf: '', password: '' });
+  const [errors, setErrors] = useState<any>({});
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Máscara CPF
-  const formatCPF = (value: string) => {
-    const cleaned = value.replace(/\D/g, '');
-    if (cleaned.length <= 3) return cleaned;
-    if (cleaned.length <= 6) return `${cleaned.slice(0, 3)}.${cleaned.slice(3)}`;
-    if (cleaned.length <= 9) return `${cleaned.slice(0, 3)}.${cleaned.slice(3, 6)}.${cleaned.slice(6)}`;
-    return `${cleaned.slice(0, 3)}.${cleaned.slice(3, 6)}.${cleaned.slice(6, 9)}-${cleaned.slice(9, 11)}`;
+  const formatCPF = (v: string) => {
+    const c = v.replace(/\D/g, '');
+    if (c.length <= 3) return c;
+    if (c.length <= 6) return `${c.slice(0, 3)}.${c.slice(3)}`;
+    if (c.length <= 9) return `${c.slice(0, 3)}.${c.slice(3, 6)}.${c.slice(6)}`;
+    return `${c.slice(0, 3)}.${c.slice(3, 6)}.${c.slice(6, 9)}-${c.slice(9, 11)}`;
   };
 
-  // Validar CPF
-  const validateCPF = (cpf: string): boolean => {
-    const cleaned = cpf.replace(/\D/g, '');
-    if (cleaned.length !== 11) return false;
-    if (/^(\d)\1{10}$/.test(cleaned)) return false;
-    let sum = 0;
-    let remainder;
-    for (let i = 1; i <= 9; i++) sum += parseInt(cleaned.substring(i - 1, i)) * (11 - i);
-    remainder = (sum * 10) % 11;
-    if (remainder === 10 || remainder === 11) remainder = 0;
-    if (remainder !== parseInt(cleaned.substring(9, 10))) return false;
-    sum = 0;
-    for (let i = 1; i <= 10; i++) sum += parseInt(cleaned.substring(i - 1, i)) * (12 - i);
-    remainder = (sum * 10) % 11;
-    if (remainder === 10 || remainder === 11) remainder = 0;
-    if (remainder !== parseInt(cleaned.substring(10, 11))) return false;
-    return true;
+  const validateCPF = (cpf: string) => {
+    const c = cpf.replace(/\D/g, '');
+    if (c.length !== 11 || /^(\d)\1{10}$/.test(c)) return false;
+    let s = 0, r;
+    for (let i = 1; i <= 9; i++) s += parseInt(c[i-1]) * (11 - i);
+    r = (s * 10) % 11; if (r >= 10) r = 0; if (r !== parseInt(c[9])) return false;
+    s = 0; for (let i = 1; i <= 10; i++) s += parseInt(c[i-1]) * (12 - i);
+    r = (s * 10) % 11; if (r >= 10) r = 0; return r === parseInt(c[10]);
   };
 
-  const getEmailError = (email: string): string | null => {
-    if (!email) return 'Email é obrigatório';
-    if (!email.includes('@')) return 'O e-mail deve conter "@"';
-    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!regex.test(email)) return 'Formato de e-mail inválido';
-    return null;
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: any) => {
     const { name, value } = e.target;
-    const updatedValue = name === 'cpf' ? formatCPF(value) : value;
-    setFormData({ ...formData, [name]: updatedValue });
-    if (errors[name as keyof FormErrors]) {
-      setErrors({ ...errors, [name]: '' });
-    }
+    setFormData({ ...formData, [name]: name === 'cpf' ? formatCPF(value) : value });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const isFormValid = () => {
+    const hasId = formData.email.includes('@') || validateCPF(formData.cpf);
+    return hasId && formData.password.length >= 6;
+  };
+
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
-    const newErrors: FormErrors = {};
-    const emailErr = getEmailError(formData.email);
-    if (emailErr) newErrors.email = emailErr;
-    if (!formData.cpf || !validateCPF(formData.cpf)) newErrors.cpf = 'CPF inválido';
-    if (!formData.password) newErrors.password = 'Senha é obrigatória';
-    else if (formData.password.length < 6) newErrors.password = 'A senha deve ter no mínimo 6 caracteres';
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
+    if (!isFormValid()) return;
     setIsLoading(true);
     try {
       const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formData.email,
-          cpf: formData.cpf,
-          password: formData.password
-        } ),
+        body: JSON.stringify(formData ),
       });
-
       const data = await response.json();
-
       if (response.ok) {
         setSubmitted(true);
-        // SALVANDO DADOS NO LOCALSTORAGE
-        if (data.token) localStorage.setItem('token', data.token);
-        if (data.user) {
-          localStorage.setItem('userId', data.user.id.toString());
-          localStorage.setItem('userName', data.user.full_name);
-          localStorage.setItem('userEmail', data.user.email);
-        }
-        
-        setTimeout(() => setLocation('/dashboard'), 1500); 
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userId', data.user.id);
+        localStorage.setItem('userName', data.user.full_name);
+        setTimeout(() => setLocation('/dashboard'), 1500);
       } else {
         alert(data.error || "Credenciais inválidas.");
       }
-    } catch (error) {
-      alert("Servidor SafeHash offline.");
+    } catch {
+      alert("Servidor offline.");
     } finally {
       setIsLoading(false);
     }
@@ -118,16 +69,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center py-12 px-4">
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(68,68,68,.2)_25%,rgba(68,68,68,.2)_50%,transparent_50%,transparent_75%,rgba(68,68,68,.2)_75%,rgba(68,68,68,.2))] bg-[length:40px_40px]"></div>
-      </div>
-
-      <motion.div
-        className="w-full max-w-md relative z-10"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
+      <motion.div className="w-full max-w-md relative z-10" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <div className="bg-white rounded-2xl shadow-2xl p-8 md:p-10">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Entrar</h1>
@@ -135,17 +77,9 @@ export default function Login() {
           </div>
 
           {submitted && (
-            <motion.div
-              className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3"
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <CheckCircle className="text-green-600" size={20} />
-              <div>
-                <p className="font-semibold text-green-900">Login realizado com sucesso!</p>
-                <p className="text-sm text-green-700">Redirecionando...</p>
-              </div>
-            </motion.div>
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3 text-green-900 font-semibold">
+              <CheckCircle className="text-green-600" /> Login realizado!
+            </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -153,100 +87,31 @@ export default function Login() {
               <label className="block text-sm font-semibold text-gray-900 mb-2">Email</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 text-gray-400" size={20} />
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="seu@email.com"
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                    errors.email ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
-                  }`}
-                  disabled={isLoading}
-                />
+                <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="seu@email.com" className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
               </div>
-              {errors.email && (
-                <motion.p className="mt-2 text-sm text-red-600 flex items-center gap-1" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <AlertCircle size={16} /> {errors.email}
-                </motion.p>
-              )}
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">CPF</label>
-              <input
-                type="text"
-                name="cpf"
-                value={formData.cpf}
-                onChange={handleChange}
-                placeholder="000.000.000-00"
-                maxLength={14}
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                  errors.cpf ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
-                }`}
-                disabled={isLoading}
-              />
-              {errors.cpf && (
-                <motion.p className="mt-2 text-sm text-red-600 flex items-center gap-1" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <AlertCircle size={16} /> {errors.cpf}
-                </motion.p>
-              )}
+              <input type="text" name="cpf" value={formData.cpf} onChange={handleChange} placeholder="000.000.000-00" maxLength={14} className={`w-full px-4 py-3 border rounded-lg focus:ring-2 outline-none ${formData.cpf && !validateCPF(formData.cpf) ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'}`} />
+              {formData.cpf && !validateCPF(formData.cpf) && <p className="mt-1 text-xs text-red-600">CPF inválido</p>}
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">Senha</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 text-gray-400" size={20} />
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                    errors.password ? 'border-red-300 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'
-                  }`}
-                  disabled={isLoading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                </button>
+                <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleChange} placeholder="••••••••" className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-gray-400">{showPassword ? <EyeOff size={20} /> : <Eye size={20} />}</button>
               </div>
-              {errors.password && (
-                <motion.p className="mt-2 text-sm text-red-600 flex items-center gap-1" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <AlertCircle size={16} /> {errors.password}
-                </motion.p>
-              )}
             </div>
 
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg transition-all duration-300"
-            >
+            <Button type="submit" disabled={isLoading || !isFormValid()} className={`w-full font-semibold py-3 rounded-lg transition-all ${isFormValid() ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}>
               {isLoading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
 
-          <div className="my-6 flex items-center gap-3">
-            <div className="flex-1 h-px bg-gray-300"></div>
-            <span className="text-sm text-gray-600">ou</span>
-            <div className="flex-1 h-px bg-gray-300"></div>
-          </div>
-
-          <p className="text-center text-gray-600">
-            Não tem conta?{' '}
-            <button
-              onClick={() => setLocation('/register')}
-              className="text-blue-600 font-semibold hover:text-blue-700 transition-colors"
-            >
-              Registre-se aqui
-            </button>
-          </p>
+          <p className="text-center text-gray-600 mt-8">Não tem conta? <button onClick={() => setLocation('/register')} className="text-blue-600 font-semibold hover:text-blue-700">Registre-se aqui</button></p>
         </div>
       </motion.div>
     </div>

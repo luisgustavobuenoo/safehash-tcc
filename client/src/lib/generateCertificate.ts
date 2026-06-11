@@ -23,38 +23,40 @@ export const generateCertificate = (evidence: any, fileDataUrl?: string | null) 
 
   const normalize = (value: any) => safeText(value, '').trim().toUpperCase();
 
+  // Determina se o registro é de Perito ou Advogado com base no título ou no valor
   const isMatriculaRegistry = (title: string, registry: string) => {
     const normalizedTitle = normalize(title);
-    const normalizedRegistry = normalize(registry);
-
     return (
       normalizedTitle.includes('PERITO') ||
-      normalizedTitle.includes('PERITA') ||
-      normalizedRegistry.startsWith('PC-') ||
-      normalizedRegistry.includes('MATR') ||
-      /^PC-[A-Z]{2}-\d{4}-\d{4}$/.test(normalizedRegistry)
+      normalizedTitle.includes('PERITA')
     );
   };
 
   const getRegistryLabel = (title: string, registry: string) => {
-    return isMatriculaRegistry(title, registry) ? 'MATRÍCULA' : 'OAB';
+    return isMatriculaRegistry(title, registry) ? 'MATRÍCULA INSTITUCIONAL' : 'NÚMERO DA OAB';
   };
 
   const formatProfessionalName = (title: string, name: string) => {
-    const cleanTitle = safeText(title, 'Perito').trim();
-    const cleanName = safeText(name, 'Perito Autenticado').trim();
+    const cleanTitle = safeText(title, 'Profissional').trim();
+    const cleanName = safeText(name, 'Identificado').trim();
     return `${cleanTitle} ${cleanName}`.replace(/\s+/g, ' ').trim();
   };
 
-  // Dados reais vindos da própria evidência retornada pelo backend.
-  // Não usa localStorage para evitar dado antigo, fixo ou digitado no formulário atual.
+  // Dados do Profissional (Puxando do objeto evidence que vem do banco)
   const professionalTitle = safeText(evidence.professional_title, 'Perito');
   const professionalRegistry = safeText(
     evidence.professional_registry || evidence.professional_id,
     'NÃO INFORMADO'
   );
+  const professionalUf = safeText(evidence.professional_uf || evidence.state, 'PR');
   const professionalRegistryLabel = getRegistryLabel(professionalTitle, professionalRegistry);
-  const peritoName = safeText(evidence.perito_name || evidence.full_name || evidence.username, 'Perito Autenticado');
+  
+  // Nome do Responsável (Tenta várias fontes de dados do banco/localStorage)
+  const peritoName = safeText(
+    evidence.perito_name || evidence.full_name || localStorage.getItem('userName'), 
+    'Profissional Autenticado'
+  );
+  
   const peritoCompleto = formatProfessionalName(professionalTitle, peritoName);
   const clienteNome = safeText(evidence.client_name, 'NÃO INFORMADO');
 
@@ -106,16 +108,20 @@ export const generateCertificate = (evidence: any, fileDataUrl?: string | null) 
 
   doc.setFontSize(9);
   doc.setTextColor(...textColor);
+  
+  // RESPONSÁVEL TÉCNICO
   doc.setFont('helvetica', 'normal');
   doc.text('RESPONSÁVEL TÉCNICO:', 14, 62);
   doc.setFont('helvetica', 'bold');
   doc.text(peritoCompleto.toUpperCase(), 62, 62, { maxWidth: 82 });
 
+  // OAB / MATRÍCULA + UF
   doc.setFont('helvetica', 'normal');
   doc.text(`${professionalRegistryLabel}:`, 14, 70);
   doc.setFont('helvetica', 'bold');
-  doc.text(professionalRegistry.toUpperCase(), 62, 70, { maxWidth: 82 });
+  doc.text(`${professionalRegistry.toUpperCase()} / ${professionalUf.toUpperCase()}`, 62, 70, { maxWidth: 82 });
 
+  // CLIENTE
   doc.setFont('helvetica', 'normal');
   doc.text('CLIENTE:', 14, 78);
   doc.setFont('helvetica', 'bold');
@@ -173,9 +179,9 @@ export const generateCertificate = (evidence: any, fileDataUrl?: string | null) 
       ['TAMANHO DO ARQUIVO', `${fileSizeKb.toFixed(2)} KB`],
       ['FORMATO / MIME TYPE', safeText(evidence.mime_type)],
       ['DATA/HORA DO REGISTRO', date],
-      ['CLIENTE', clienteNome],
-      ['RESPONSÁVEL TÉCNICO', peritoCompleto],
-      [professionalRegistryLabel, professionalRegistry],
+      ['CLIENTE', clienteNome.toUpperCase()],
+      ['RESPONSÁVEL TÉCNICO', peritoCompleto.toUpperCase()],
+      [professionalRegistryLabel, `${professionalRegistry.toUpperCase()} / ${professionalUf.toUpperCase()}`],
     ],
     theme: 'plain',
     styles: {
@@ -259,7 +265,7 @@ export const generateCertificate = (evidence: any, fileDataUrl?: string | null) 
   doc.text(peritoCompleto.toUpperCase(), 105, signatureLineY + 5, { align: 'center' });
   doc.setFontSize(7);
   doc.setFont('helvetica', 'normal');
-  doc.text(`${professionalRegistryLabel}: ${professionalRegistry.toUpperCase()}`, 105, signatureLineY + 9, { align: 'center' });
+  doc.text(`${professionalRegistryLabel}: ${professionalRegistry.toUpperCase()} / ${professionalUf.toUpperCase()}`, 105, signatureLineY + 9, { align: 'center' });
   doc.text('ASSINATURA DO RESPONSÁVEL TÉCNICO', 105, signatureLineY + 13, { align: 'center' });
 
   // --- RODAPÉ ---

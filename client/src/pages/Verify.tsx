@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FileSearch, ShieldCheck, ShieldAlert, Upload, Hash, ArrowRight } from 'lucide-react';
+import { FileSearch, ShieldCheck, ShieldAlert, Upload, Hash, ArrowRight, Loader2 } from 'lucide-react';
 import DashboardHeader from "@/components/layout/DashboardHeader";
 import { toast } from "sonner";
 
@@ -8,6 +8,7 @@ export default function Verify() {
   const [fileHash, setFileHash] = useState<string | null>(null);
   const [inputHash, setInputHash] = useState<string>("");
   const [isMatch, setIsMatch] = useState<boolean | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   // Função para gerar o hash do arquivo que está sendo verificado agora
   const handleFileVerify = async (file: File) => {
@@ -17,21 +18,51 @@ export default function Verify() {
     const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
     setFileHash(hashHex);
     setIsMatch(null); // Reseta a comparação ao subir novo arquivo
+    
+    // Se o campo de hash estiver vazio, preenche automaticamente para facilitar o teste
+    if (!inputHash) {
+        setInputHash(hashHex);
+    }
   };
 
-  // Lógica de comparação (O "Check" Forense)
-  const compareHashes = () => {
+  // Lógica de comparação e registro no backend para a Auditoria
+  const compareHashes = async () => {
     if (!fileHash || !inputHash) {
       toast.error("Suba um arquivo e insira o hash de comparação.");
       return;
     }
+
+    setIsVerifying(true);
     const match = fileHash.toLowerCase() === inputHash.trim().toLowerCase();
     setIsMatch(match);
-    
-    if (match) {
-      toast.success("Integridade Confirmada: Os hashes são idênticos!");
-    } else {
-      toast.error("Alerta: Os hashes são diferentes! Arquivo pode ter sido alterado.");
+
+    try {
+      const token = localStorage.getItem('token');
+      // Envia para o backend registrar o log de auditoria que aparece na outra página
+      const response = await fetch('http://localhost:5000/api/evidence/verify', {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          currentHash: fileHash,
+          originalHash: inputHash.trim( ),
+          ip: '127.0.0.1' 
+        }),
+      });
+
+      if (response.ok) {
+        if (match) {
+          toast.success("Integridade Confirmada e registrada na auditoria!");
+        } else {
+          toast.error("Alerta: Hash divergente! Log de violação registrado.");
+        }
+      }
+    } catch (error) {
+      console.error("Erro de conexão ao registrar log:", error);
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -92,9 +123,18 @@ export default function Verify() {
             </div>
             <button 
               onClick={compareHashes}
-              className="w-full mt-6 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+              disabled={isVerifying}
+              className="w-full mt-6 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              Verificar Autenticidade <ArrowRight size={18} />
+              {isVerifying ? (
+                <>
+                  <Loader2 className="animate-spin" size={18} /> Verificando...
+                </>
+              ) : (
+                <>
+                  Verificar Autenticidade <ArrowRight size={18} />
+                </>
+              )}
             </button>
           </div>
 
