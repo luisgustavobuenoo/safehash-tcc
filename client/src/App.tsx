@@ -13,6 +13,7 @@ import Logs from "./pages/Logs";
 import Profile from "./pages/Profile"; 
 
 
+
 // Importando os novos componentes de seção para as rotas públicas
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";

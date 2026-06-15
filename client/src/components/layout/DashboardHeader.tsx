@@ -21,7 +21,12 @@ export default function DashboardHeader() {
       if (!userId) return;
 
       try {
-        const response = await fetch(`http://localhost:5000/api/auth/profile?userId=${userId}` );
+        const response = await fetch(`http://localhost:5000/api/auth/profile?userId=${userId}`, {
+  headers: {
+    'Authorization': `Bearer ${localStorage.getItem('token' )}`,
+    'Content-Type': 'application/json'
+  }
+});
         const data = await response.json();
         if (response.ok && data.full_name) {
           setUserName(data.full_name);

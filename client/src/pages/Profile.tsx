@@ -3,7 +3,9 @@ import { motion } from 'framer-motion';
 import { User, Mail, Shield, Calendar, Award, Fingerprint, FileCheck, Briefcase } from 'lucide-react';
 import DashboardHeader from '@/components/layout/DashboardHeader';
 
-export default function Profile() {
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+export default function Profile( ) {
   const [userData, setUserData] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -12,9 +14,14 @@ export default function Profile() {
       const userId = localStorage.getItem('userId');
       const token = localStorage.getItem('token');
       try {
-        const response = await fetch(`http://localhost:5000/api/auth/profile?userId=${userId}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        } );
+       // Dentro do Profile.tsx
+const response = await fetch(`http://localhost:5000/api/auth/profile?userId=${userId}`, {
+  headers: {
+    'Authorization': `Bearer ${token}`, // Aqui a variável costuma se chamar apenas 'token'
+    'Content-Type': 'application/json'
+  }
+} );
+
         const data = await response.json();
         if (response.ok) setUserData(data);
       } catch (error) { console.error(error); } finally { setIsLoading(false); }
@@ -22,7 +29,7 @@ export default function Profile() {
     fetchProfile();
   }, []);
 
-  if (isLoading || !userData) return <div className="min-h-screen bg-slate-50 flex items-center justify-center">Carregando...</div>;
+  if (isLoading || !userData) return <div className="min-h-screen bg-slate-50 flex items-center justify-center font-bold uppercase text-slate-400">Carregando...</div>;
 
   const memberSince = new Date(userData.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
 
@@ -38,15 +45,15 @@ export default function Profile() {
           </div>
 
           <div className="pt-16 pb-10 px-8 text-center border-b border-slate-100">
-            <h1 className="text-2xl font-bold text-slate-900">{userData.full_name}</h1>
-            <p className={`font-bold text-xs uppercase tracking-widest mt-1 ${userData.professional_type === 'Perito' ? 'text-blue-600' : 'text-slate-600'}`}>{userData.cargo || 'Profissional'}</p>
+            <h1 className="text-2xl font-bold text-slate-900 uppercase">{userData.full_name}</h1>
+            <p className={`font-bold text-xs uppercase tracking-widest mt-1 ${userData.professional_type === 'Perito' ? 'text-blue-600' : 'text-slate-600'}`}>{userData.professional_type}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 lg:p-12">
             <div className="space-y-6">
               <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2"><Fingerprint size={16} /> Identidade Funcional</h3>
               <div className="flex items-start gap-4"><div className="p-2 bg-slate-50 rounded-lg text-slate-400"><Mail size={18} /></div><div><p className="text-xs text-slate-400 font-medium">E-mail Institucional</p><p className="text-sm font-semibold text-slate-700">{userData.email}</p></div></div>
-              <div className="flex items-start gap-4"><div className="p-2 bg-slate-50 rounded-lg text-slate-400">{userData.professional_type === 'Perito' ? <Shield size={18} /> : <Briefcase size={18} />}</div><div><p className="text-xs text-slate-400 font-medium">{userData.professional_type === 'Perito' ? 'Matrícula / ID' : 'Número da OAB'}</p><p className="text-sm font-mono font-bold text-slate-700">{userData.matricula || 'Não informado'}</p></div></div>
+              <div className="flex items-start gap-4"><div className="p-2 bg-slate-50 rounded-lg text-slate-400">{userData.professional_type === 'Perito' ? <Shield size={18} /> : <Briefcase size={18} />}</div><div><p className="text-xs text-slate-400 font-medium">{userData.professional_type === 'Perito' ? 'Matrícula / ID' : 'Número da OAB'}</p><p className="text-sm font-mono font-bold text-slate-700">{userData.professional_id} / {userData.professional_uf}</p></div></div>
               <div className="flex items-start gap-4"><div className="p-2 bg-slate-50 rounded-lg text-slate-400"><Calendar size={18} /></div><div><p className="text-xs text-slate-400 font-medium">Membro desde</p><p className="text-sm font-semibold text-slate-700">{memberSince}</p></div></div>
             </div>
 

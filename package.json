@@ -1,5 +1,5 @@
 {
-  "name": "exterro-ftk-imager-clone",
+  "name": "SafeHash-imager",
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
@@ -45,6 +45,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
     "embla-carousel-react": "^8.6.0",
     "exif-js": "^2.3.0",
     "express": "^4.21.2",

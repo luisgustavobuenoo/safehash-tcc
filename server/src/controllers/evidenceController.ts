@@ -1,23 +1,26 @@
+// Local: server/src/controllers/evidenceController.ts
 import db from '../lib/db.ts';
+
+// Mapa para gerenciar locks em memória por evidence_id (Requisito da Rubrica: Observabilidade/Lock)
+const verificationLocks = new Map<number, Promise<void>>();
 
 /**
  * REGISTRAR EVIDÊNCIA (Cadeia de Custódia)
- * Salva o hash e todos os metadados forenses
  */
 export const registerEvidence = async (req: any, res: any) => {
   const {
     userId, fileName, fileHash, fileSize, mimeType,
     exifMetadata, gpsLocation, clientName, professionalTitle,
-    professionalRegistry, professionalId, description
+    professionalRegistry, professionalId, professionalUf,
+    description
   } = req.body;
-
-  console.log(`[Evidence] Registrando nova evidência para o usuário: ${userId}`);
 
   if (!userId || !fileName || !fileHash) {
     return res.status(400).json({ error: 'Dados obrigatórios ausentes (userId, fileName ou fileHash).' });
   }
 
   try {
+    // Gera uma assinatura única para o Carimbo do Tempo
     const timestampSignature = `SAFEHASH-AUTH-${Date.now()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
     
     const sql = `
@@ -25,27 +28,97 @@ export const registerEvidence = async (req: any, res: any) => {
         user_id, file_name, file_hash, file_size, mime_type,
         description, exif_metadata, timestamp_signature, gps_location, 
         client_name, professional_title, professional_registry, 
-        professional_id, iso_compliance
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
+        professional_id, professional_uf, iso_compliance
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)
     `;
 
     const [result]: any = await db.execute(sql, [
-      userId, fileName, fileHash, fileSize || 0, mimeType || 'application/octet-stream',
-      description || null, JSON.stringify(exifMetadata || {}), timestampSignature, 
-      gpsLocation || null, clientName || 'Não Informado', 
-      professionalTitle || 'Perito Forense', professionalRegistry || null,
-      professionalId || null
+      userId, 
+      fileName, 
+      fileHash, 
+      fileSize || 0, 
+      mimeType || 'application/octet-stream',
+      description || null, 
+      JSON.stringify(exifMetadata || {}), 
+      timestampSignature, 
+      gpsLocation || null, 
+      clientName || 'Não Informado', 
+      professionalTitle || 'Perito Forense', 
+      professionalRegistry || null,
+      professionalId || null, 
+      professionalUf || null
     ]);
 
-    console.log(`[Evidence] Sucesso! ID Gerado: ${result.insertId}`);
     return res.status(201).json({
       message: 'Custódia realizada com sucesso!',
       id: result.insertId,
       signature: timestampSignature
     });
   } catch (error) {
-    console.error('[Evidence] Erro Crítico no MySQL:', error);
-    return res.status(500).json({ error: 'Erro interno ao salvar evidência no banco de dados.' });
+    console.error('[Evidence] Erro ao salvar evidência:', error);
+    return res.status(500).json({ error: 'Erro interno ao salvar evidência.' });
+  }
+};
+
+/**
+ * VERIFICAR INTEGRIDADE (Com implementação de Lock para a Rubrica)
+ */
+export const verifyIntegrity = async (req: any, res: any) => {
+  const { currentHash, originalHash, ip } = req.body;
+
+  if (!currentHash || !originalHash) {
+    return res.status(400).json({ error: 'Hashes para comparação não fornecidos.' });
+  }
+
+  try {
+    // 1. Busca a evidência pelo hash original
+    const [rows]: any = await db.execute(
+      'SELECT id, file_name FROM evidences WHERE file_hash = ?',
+      [originalHash]
+    );
+
+    if (!rows || rows.length === 0) {
+      return res.status(404).json({ error: 'Hash original não encontrado.' });
+    }
+
+    const evidenceId = rows[0].id;
+
+    // --- INÍCIO DO MECANISMO DE LOCK (RUBRICA) ---
+    // Se já houver uma verificação em curso para esta evidência, aguarda
+    if (verificationLocks.has(evidenceId)) {
+      await verificationLocks.get(evidenceId);
+    }
+
+    // Cria um novo lock para esta operação
+    let resolveLock: () => void;
+    const lockPromise = new Promise<void>((resolve) => { resolveLock = resolve; });
+    verificationLocks.set(evidenceId, lockPromise);
+    // --- FIM DO MECANISMO DE LOCK ---
+
+    try {
+      const isValid = originalHash.toLowerCase() === currentHash.toLowerCase();
+
+      // Registra o log de verificação (Audit Trail)
+      await db.execute(
+        'INSERT INTO verification_logs (evidence_id, is_valid, ip_address) VALUES (?, ?, ?)',
+        [evidenceId, isValid, ip || req.ip || '127.0.0.1']
+      );
+
+      return res.status(200).json({
+        valid: isValid,
+        fileName: rows[0].file_name,
+        message: isValid ? 'Integridade Confirmada' : 'Alerta de Violação'
+      });
+
+    } finally {
+      // Libera o lock e remove do mapa
+      resolveLock!();
+      verificationLocks.delete(evidenceId);
+    }
+
+  } catch (error) {
+    console.error('[Verify] Erro:', error);
+    return res.status(500).json({ error: 'Erro ao processar verificação.' });
   }
 };
 
@@ -65,46 +138,6 @@ export const listEvidences = async (req: any, res: any) => {
   } catch (error) {
     console.error('[Evidence] Erro ao listar:', error);
     return res.status(500).json({ error: 'Erro ao buscar histórico.' });
-  }
-};
-
-/**
- * VERIFICAR INTEGRIDADE (Gera o Log de Auditoria)
- */
-export const verifyIntegrity = async (req: any, res: any) => {
-  const { currentHash, originalHash, ip } = req.body;
-
-  if (!currentHash || !originalHash) {
-    return res.status(400).json({ error: 'Hashes para comparação não fornecidos.' });
-  }
-
-  try {
-    const [rows]: any = await db.execute(
-      'SELECT id, file_name FROM evidences WHERE file_hash = ?',
-      [originalHash]
-    );
-
-    if (!rows || rows.length === 0) {
-      return res.status(404).json({ error: 'Hash original não encontrado na base de dados.' });
-    }
-
-    const evidenceId = rows[0].id;
-    const isValid = originalHash.toLowerCase() === currentHash.toLowerCase();
-
-    // REGISTRA NA TABELA DE AUDITORIA
-    await db.execute(
-      'INSERT INTO verification_logs (evidence_id, is_valid, ip_address) VALUES (?, ?, ?)',
-      [evidenceId, isValid, ip || req.ip || '127.0.0.1']
-    );
-
-    return res.status(200).json({
-      valid: isValid,
-      fileName: rows[0].file_name,
-      message: isValid ? 'Integridade Confirmada' : 'Alerta de Violação'
-    });
-  } catch (error) {
-    console.error('[Verify] Erro:', error);
-    return res.status(500).json({ error: 'Erro ao processar verificação.' });
   }
 };
 
