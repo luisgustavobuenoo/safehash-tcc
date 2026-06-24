@@ -6,18 +6,14 @@ interface HeroSectionProps {
   title?: string;
   subtitle?: string;
   primaryCTA?: string;
-  secondaryCTA?: string;
   onPrimaryCTA?: () => void;
-  onSecondaryCTA?: () => void;
 }
 
 export default function HeroSection({
-  title = "SafeHash: A Cadeia de Custódia Digital com Validade Jurídica e Privacidade Forense",
-  subtitle = "Garanta a integridade inquestionável de suas provas digitais. O SafeHash é a plataforma essencial para peritos e advogados que buscam conformidade com o Art. 158-B do CPP e Carimbo do Tempo ICP-Brasil.",
-  primaryCTA = "Começar Registro Agora",
-  secondaryCTA = "Ver Planos Profissionais",
+  title = "SafeHash: Preservação de Evidências Digitais com Rigor Forense",
+  subtitle = "Automatize a Cadeia de Custódia conforme o Art. 158-B do CPP. Garanta a integridade através de Lacre Digital SHA-256 e Registro Temporal em uma plataforma de privacidade forense.",
+  primaryCTA = "Iniciar Registro de Custódia",
   onPrimaryCTA,
-  onSecondaryCTA,
 }: HeroSectionProps) {
   const [, setLocation] = useLocation();
 
@@ -26,31 +22,21 @@ export default function HeroSection({
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.2,
+        staggerChildren: 0.15,
         delayChildren: 0.1,
       },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 15 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.8 },
+      transition: { duration: 0.6 },
     },
   };
 
-  // Função para lidar com o clique no botão secundário (Planos)
-  const handleSecondaryClick = () => {
-    if (onSecondaryCTA) {
-      onSecondaryCTA();
-    } else {
-      setLocation('/planos');
-    }
-  };
-
-  // Função para lidar com o clique no botão primário (Registro/Login)
   const handlePrimaryClick = () => {
     if (onPrimaryCTA) {
       onPrimaryCTA();
@@ -60,10 +46,10 @@ export default function HeroSection({
   };
 
   return (
-    <section className="relative w-full min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-950 via-blue-900 to-blue-950">
-      
+    <section className="relative w-full min-h-[75vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-950 via-blue-900 to-blue-950 py-16">
+     
       <div className="absolute inset-0 opacity-5">
-        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(68,68,68,.2)_25%,rgba(68,68,68,.2)_50%,transparent_50%,transparent_75%,rgba(68,68,68,.2)_75%,rgba(68,68,68,.2))] bg-[length:40px_40px]"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(68,68,68,.2)_25%,rgba(68,68,68,.2)_50%,transparent_50%,transparent_75%,rgba(68,68,68,.2)_75%,rgba(68,68,68,.2))] bg-[length:30px_30px]"></div>
       </div>
 
       <motion.div
@@ -72,74 +58,57 @@ export default function HeroSection({
         initial="hidden"
         animate="visible"
       >
-        
-        <motion.div variants={itemVariants} className="mb-8">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-            <span className="text-sm text-gray-200">Privacidade Forense</span>
-            <span className="text-gray-400">/</span>
-            <span className="text-sm font-semibold text-white">Conformidade CPP</span>
+        <motion.div variants={itemVariants} className="mb-6">
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+            <span className="text-[10px] md:text-xs font-bold text-gray-200 uppercase tracking-widest">ISO/IEC 27037</span>
+            <span className="text-gray-500">|</span>
+            <span className="text-[10px] md:text-xs font-bold text-blue-400 uppercase tracking-widest">Art. 158-B CPP</span>
           </div>
         </motion.div>
 
-       
-        <motion.h1
-          variants={itemVariants}
-          className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight max-w-5xl mx-auto"
+        <motion.h1 
+          variants={itemVariants} 
+          className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white mb-4 leading-tight max-w-4xl mx-auto tracking-tight"
         >
           {title}
         </motion.h1>
-
         
-        <motion.p
-          variants={itemVariants}
-          className="text-lg md:text-xl text-gray-200 mb-10 max-w-3xl mx-auto leading-relaxed"
+        <motion.p 
+          variants={itemVariants} 
+          className="text-sm md:text-base text-gray-200 mb-8 max-w-2xl mx-auto leading-relaxed opacity-90"
         >
           {subtitle}
         </motion.p>
 
-       
-        <motion.div
-          variants={itemVariants}
-          className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-        >
-          <Button
-            size="lg"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 text-lg font-semibold rounded-lg transition-all duration-300 hover:shadow-lg hover:shadow-blue-600/50 w-full sm:w-auto"
+        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+          <Button 
+            size="lg" 
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-5 text-base font-bold rounded-xl transition-all duration-300 hover:shadow-lg hover:shadow-blue-600/30 w-full sm:w-auto" 
             onClick={handlePrimaryClick}
           >
             {primaryCTA}
           </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            className="bg-transparent border-white/30 hover:bg-white/10 text-white px-8 py-6 text-lg font-semibold rounded-lg transition-all duration-300 w-full sm:w-auto"
-            onClick={handleSecondaryClick}
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="bg-transparent border-white/20 hover:bg-white/5 text-white px-6 py-5 text-base font-bold rounded-xl transition-all duration-300 w-full sm:w-auto" 
+            onClick={() => setLocation('/verify')}
           >
-            {secondaryCTA}
+            Verificar Integridade
           </Button>
         </motion.div>
       </motion.div>
 
      
-      <motion.div
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-        animate={{ y: [0, 10, 0] }}
+      <motion.div 
+        className="absolute bottom-6 left-1/2 transform -translate-x-1/2 opacity-50" 
+        animate={{ y: [0, 5, 0] }} 
         transition={{ duration: 2, repeat: Infinity }}
       >
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-sm text-gray-300">Explore a Tecnologia</span>
-          <svg
-            className="w-6 h-6 text-gray-300"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 14l-7 7m0 0l-7-7m7 7V3"
-            />
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">Protocolo Forense</span>
+          <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </div>
       </motion.div>

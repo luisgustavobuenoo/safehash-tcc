@@ -1,4 +1,4 @@
-// Local: client/src/pages/Logs.tsx
+
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -32,7 +32,7 @@ export default function Logs( ) {
       if (!userId) return;
       setIsLoading(true);
       
-      // --- ADICIONADO: ENVIO DO TOKEN NO CABEÇALHO ---
+    
       const response = await fetch(`${API_BASE_URL}/evidence/logs?userId=${userId}`, {
         headers: { 
           'Authorization': `Bearer ${localStorage.getItem('token')}`,

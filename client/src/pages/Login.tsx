@@ -5,7 +5,9 @@ import { Mail, Lock, CheckCircle, Eye, EyeOff, Check, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
-export default function Login() {
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+export default function Login( ) {
   const [, setLocation] = useLocation();
   const [formData, setFormData] = useState({ email: '', cpf: '', password: '' });
   const [submitted, setSubmitted] = useState(false);
@@ -45,15 +47,17 @@ export default function Login() {
     if (!isFormValid()) return;
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+     
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          email: formData.email.toLowerCase( ).trim(),
+          email: formData.email.toLowerCase().trim(),
           cpf: formData.cpf.replace(/\D/g, ""), 
           password: formData.password 
         }),
       });
+
       const data = await response.json();
       if (response.ok) {
         localStorage.clear();
@@ -67,7 +71,7 @@ export default function Login() {
         toast.error(data.error || "Credenciais inválidas.");
       }
     } catch {
-      toast.error("Servidor offline.");
+      toast.error("Servidor offline ou erro de conexão.");
     } finally {
       setIsLoading(false);
     }

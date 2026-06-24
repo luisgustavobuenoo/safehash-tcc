@@ -1,33 +1,44 @@
 import { motion } from 'framer-motion';
+import { useLocation } from 'wouter';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
+  const [, setLocation] = useLocation();
 
-  const footerLinks = {
-    Recursos: [
-      'Como Funciona o SHA-256',
-      'Guia de Cadeia de Custódia',
-      'Validade Jurídica (CPP)',
-      'Documentação Técnica',
-    ],
-    Soluções: [
-      'Para Peritos Assistentes',
-      'Para Advogados',
-      'Para Investigadores',
-      'Captura de Imagens Digitais',
-    ],
-    Suporte: [
-      'Central de Ajuda',
-      'Contato Especializado',
-      'Status do Sistema',
-    ],
-    Legal: [
-      'Termos de Uso',
-      'Política de Privacidade',
-      'Conformidade Forense',
-      'Segurança de Dados',
-    ],
-  };
+  const footerLinks = [
+    {
+      category: 'Plataforma',
+      links: [
+        { name: 'Página Inicial', path: '/' },
+        { name: 'Verificar Integridade', path: '/verify' },
+        { name: 'Área do Perito', path: '/login' },
+        { name: 'Criar Conta', path: '/register' },
+      ]
+    },
+    {
+      category: 'Soluções',
+      links: [
+        { name: 'Para Advogados', path: '/solucoes/advogados' },
+        { name: 'Para Peritos', path: '/solucoes/peritos' },
+        { name: 'Captura de Imagens', path: '/solucoes/captura' },
+      ]
+    },
+    {
+      category: 'Conformidade',
+      links: [
+        { name: 'Art. 158-B do CPP', path: '/conformidade/cpp' },
+        { name: 'Padrão ICP-Brasil', path: '/conformidade/icp-brasil' },
+        { name: 'Segurança SHA-256', path: '/conformidade/sha256' },
+      ]
+    },
+    {
+      category: 'Recursos',
+      links: [
+        { name: 'Guias e Tutoriais', path: '/recursos/guias' },
+        { name: 'Documentação Técnica', path: '/recursos/docs' },
+      ]
+    }
+  ];
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -50,10 +61,10 @@ export default function Footer() {
 
   return (
     <footer className="bg-blue-950 text-gray-300 border-t border-white/5">
-      {/* Main Footer */}
+    
       <div className="container mx-auto px-4 py-12 md:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 mb-12">
-          {/* Logo and Description */}
+          
           <motion.div
             className="lg:col-span-4"
             initial={{ opacity: 0, y: 20 }}
@@ -61,7 +72,10 @@ export default function Footer() {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <div className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+            <div 
+              className="text-2xl font-bold text-white mb-4 flex items-center gap-2 cursor-pointer"
+              onClick={() => setLocation('/')}
+            >
               <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-sm">SH</div>
               SafeHash
             </div>
@@ -82,7 +96,7 @@ export default function Footer() {
             </div>
           </motion.div>
 
-          {/* Links Grid */}
+         
           <motion.div
             className="lg:col-span-8 grid grid-cols-2 md:grid-cols-4 gap-8"
             variants={containerVariants}
@@ -90,18 +104,21 @@ export default function Footer() {
             whileInView="visible"
             viewport={{ once: true }}
           >
-            {Object.entries(footerLinks).map(([category, links]) => (
-              <motion.div key={category} variants={itemVariants}>
-                <h4 className="font-bold text-white mb-4 uppercase text-xs tracking-widest">{category}</h4>
+            {footerLinks.map((section) => (
+              <motion.div key={section.category} variants={itemVariants}>
+                <h4 className="font-bold text-white mb-4 uppercase text-xs tracking-widest">{section.category}</h4>
                 <ul className="space-y-3">
-                  {links.map((link) => (
-                    <li key={link}>
-                      <a
-                        href="#"
-                        className="text-gray-400 hover:text-blue-400 transition-colors text-sm"
+                  {section.links.map((link) => (
+                    <li key={link.name}>
+                      <button
+                        onClick={() => {
+                          setLocation(link.path);
+                          window.scrollTo(0, 0);
+                        }}
+                        className="text-gray-400 hover:text-blue-400 transition-colors text-sm text-left"
                       >
-                        {link}
-                      </a>
+                        {link.name}
+                      </button>
                     </li>
                   ))}
                 </ul>
@@ -110,7 +127,7 @@ export default function Footer() {
           </motion.div>
         </div>
 
-        {/* Disclaimer Section */}
+        
         <motion.div 
           className="bg-white/5 rounded-xl p-6 mb-12 border border-white/10"
           initial={{ opacity: 0 }}
@@ -124,10 +141,10 @@ export default function Footer() {
           </p>
         </motion.div>
 
-        {/* Divider */}
+      
         <div className="border-t border-white/10 my-8"></div>
 
-        {/* Bottom Footer */}
+        
         <motion.div
           className="flex flex-col md:flex-row items-center justify-between gap-6"
           initial={{ opacity: 0 }}
@@ -135,12 +152,12 @@ export default function Footer() {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          {/* Copyright */}
+         
           <div className="text-gray-500 text-sm">
             © {currentYear} SafeHash. Desenvolvido para a Justiça Digital Brasileira.
           </div>
 
-          {/* Social/Trust Badges */}
+          
           <div className="flex items-center gap-6">
             <span className="text-xs text-gray-600 uppercase tracking-tighter">Segurança Criptográfica SHA-256</span>
             <div className="h-4 w-px bg-white/10"></div>

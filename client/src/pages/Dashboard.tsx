@@ -1,4 +1,3 @@
-// Local: client/src/pages/Dashboard.tsx
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -11,7 +10,7 @@ import { generateCertificate } from '../lib/generateCertificate';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-export default function Dashboard( ) {
+export default function Dashboard(  ) {
   const [fileHash, setFileHash] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>('');
   const [fileSize, setFileSize] = useState<number>(0);
@@ -196,7 +195,6 @@ export default function Dashboard( ) {
                 </div>
               </div>
 
-              {/* HASH GERADO - OPÇÃO 2: TERMINAL DE SEGURANÇA */}
               <AnimatePresence>
                 {fileHash && (
                   <motion.div 
@@ -250,7 +248,6 @@ export default function Dashboard( ) {
                         <td className="px-6 py-6">
                           <p className="text-sm font-bold text-slate-900 truncate max-w-[180px]">{ev.file_name}</p>
                           <p className="text-[10px] text-slate-500 font-bold uppercase mt-1">Cliente: {ev.client_name || 'N/A'}</p>
-                          {/* HASH NO HISTÓRICO - RÓTULO NA COR DO CLIENTE */}
                           <div className="mt-3 flex flex-col gap-1">
                             <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Digital Hash:</span>
                             <p className="text-[11px] font-mono text-blue-600 font-bold truncate max-w-[150px]" title={ev.file_hash}>
@@ -260,9 +257,7 @@ export default function Dashboard( ) {
                         </td>
                         <td className="px-6 py-6">
                           <p className="text-[11px] font-bold text-slate-900 uppercase">{ev.perito_name || ev.full_name || userName}</p>
-                          <p className="text-[9px] text-slate-500 font-bold uppercase mt-0.5">
-                            {getRegistryLabel(ev.professional_title)}: {ev.professional_registry || ev.professional_id}
-                          </p>
+                          <p className="text-[9px] text-slate-500 font-bold uppercase mt-0.5">{getRegistryLabel(ev.professional_title)}: {ev.professional_registry || ev.professional_id}</p>
                         </td>
                         <td className="px-6 py-6">
                           <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-2.5 py-1.5 rounded-lg w-fit border border-emerald-100">

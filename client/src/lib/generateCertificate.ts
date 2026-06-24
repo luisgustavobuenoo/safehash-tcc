@@ -23,7 +23,7 @@ export const generateCertificate = (evidence: any, fileDataUrl?: string | null) 
 
   const normalize = (value: any) => safeText(value, '').trim().toUpperCase();
 
-  // Determina se o registro é de Perito ou Advogado com base no título ou no valor
+  
   const isMatriculaRegistry = (title: string, registry: string) => {
     const normalizedTitle = normalize(title);
     return (
@@ -42,7 +42,7 @@ export const generateCertificate = (evidence: any, fileDataUrl?: string | null) 
     return `${cleanTitle} ${cleanName}`.replace(/\s+/g, ' ').trim();
   };
 
-  // Dados do Profissional (Puxando do objeto evidence que vem do banco)
+ 
   const professionalTitle = safeText(evidence.professional_title, 'Perito');
   const professionalRegistry = safeText(
     evidence.professional_registry || evidence.professional_id,
@@ -51,7 +51,7 @@ export const generateCertificate = (evidence: any, fileDataUrl?: string | null) 
   const professionalUf = safeText(evidence.professional_uf || evidence.state, 'PR');
   const professionalRegistryLabel = getRegistryLabel(professionalTitle, professionalRegistry);
   
-  // Nome do Responsável (Tenta várias fontes de dados do banco/localStorage)
+ 
   const peritoName = safeText(
     evidence.perito_name || evidence.full_name || localStorage.getItem('userName'), 
     'Profissional Autenticado'
@@ -80,11 +80,11 @@ export const generateCertificate = (evidence: any, fileDataUrl?: string | null) 
   const textColor: [number, number, number] = [51, 65, 85];
   const mutedColor: [number, number, number] = [100, 116, 139];
 
-  // --- BORDA DO DOCUMENTO ---
+  
   doc.setDrawColor(203, 213, 225);
   doc.rect(5, 5, 200, 287);
 
-  // --- CABEÇALHO ---
+  
   doc.setFillColor(...primaryColor);
   doc.rect(5, 5, 200, 35, 'F');
 
@@ -98,7 +98,7 @@ export const generateCertificate = (evidence: any, fileDataUrl?: string | null) 
   doc.text('SISTEMA SAFEHASH - PROTOCOLO DE CADEIA DE CUSTÓDIA COMPUTACIONAL', 105, 26, { align: 'center' });
   doc.text('VALIDAÇÃO CRIPTOGRÁFICA EM CONFORMIDADE COM ISO/IEC 27037', 105, 31, { align: 'center' });
 
-  // --- BOX DE IDENTIFICAÇÃO ---
+  
   doc.setTextColor(...primaryColor);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
@@ -109,19 +109,19 @@ export const generateCertificate = (evidence: any, fileDataUrl?: string | null) 
   doc.setFontSize(9);
   doc.setTextColor(...textColor);
   
-  // RESPONSÁVEL TÉCNICO
+  
   doc.setFont('helvetica', 'normal');
   doc.text('RESPONSÁVEL TÉCNICO:', 14, 62);
   doc.setFont('helvetica', 'bold');
   doc.text(peritoCompleto.toUpperCase(), 62, 62, { maxWidth: 82 });
 
-  // OAB / MATRÍCULA + UF
+  
   doc.setFont('helvetica', 'normal');
   doc.text(`${professionalRegistryLabel}:`, 14, 70);
   doc.setFont('helvetica', 'bold');
   doc.text(`${professionalRegistry.toUpperCase()} / ${professionalUf.toUpperCase()}`, 62, 70, { maxWidth: 82 });
 
-  // CLIENTE
+  
   doc.setFont('helvetica', 'normal');
   doc.text('CLIENTE:', 14, 78);
   doc.setFont('helvetica', 'bold');
@@ -138,7 +138,7 @@ export const generateCertificate = (evidence: any, fileDataUrl?: string | null) 
   doc.setFont('helvetica', 'bold');
   doc.text(new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }), 150, 76);
 
-  // --- SELO DE CONFORMIDADE ---
+  
   doc.setFillColor(255, 255, 255);
   doc.rect(170, 82, 26, 12, 'F');
   doc.setDrawColor(...accentColor);
@@ -149,7 +149,7 @@ export const generateCertificate = (evidence: any, fileDataUrl?: string | null) 
   doc.text('ISO 27037', 183, 87, { align: 'center' });
   doc.text('VALIDADO', 183, 91, { align: 'center' });
 
-  // --- VISUALIZAÇÃO DA EVIDÊNCIA ---
+ 
   let nextY = 100;
   if (fileDataUrl && evidence.mime_type?.startsWith('image/')) {
     doc.setTextColor(...primaryColor);
@@ -166,7 +166,7 @@ export const generateCertificate = (evidence: any, fileDataUrl?: string | null) 
     }
   }
 
-  // --- SEÇÃO 1: DADOS DO ARQUIVO ---
+  
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...primaryColor);
@@ -196,7 +196,7 @@ export const generateCertificate = (evidence: any, fileDataUrl?: string | null) 
     margin: { left: 14, right: 14 },
   });
 
-  // --- SEÇÃO 2: INTEGRIDADE ---
+
   const finalY1 = (doc as any).lastAutoTable.finalY;
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
@@ -215,7 +215,7 @@ export const generateCertificate = (evidence: any, fileDataUrl?: string | null) 
   const hashLines = doc.splitTextToSize(hash, 170);
   doc.text(hashLines, 105, finalY1 + 20, { align: 'center' });
 
-  // --- SEÇÃO 3: RASTREABILIDADE ---
+  
   const section3Y = finalY1 + 42;
   doc.setTextColor(...primaryColor);
   doc.setFontSize(10);
@@ -244,7 +244,7 @@ export const generateCertificate = (evidence: any, fileDataUrl?: string | null) 
     margin: { left: 14, right: 14 },
   });
 
-  // --- DECLARAÇÃO TÉCNICA ---
+
   const finalY2 = (doc as any).lastAutoTable.finalY;
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
@@ -254,7 +254,7 @@ export const generateCertificate = (evidence: any, fileDataUrl?: string | null) 
   const declarationY = finalY2 + 10;
   doc.text(declarationLines, 14, declarationY);
 
-  // --- ASSINATURA ---
+ 
   const pageHeight = doc.internal.pageSize.height;
   const signatureLineY = pageHeight - 36;
   doc.setDrawColor(...primaryColor);
@@ -268,7 +268,7 @@ export const generateCertificate = (evidence: any, fileDataUrl?: string | null) 
   doc.text(`${professionalRegistryLabel}: ${professionalRegistry.toUpperCase()} / ${professionalUf.toUpperCase()}`, 105, signatureLineY + 9, { align: 'center' });
   doc.text('ASSINATURA DO RESPONSÁVEL TÉCNICO', 105, signatureLineY + 13, { align: 'center' });
 
-  // --- RODAPÉ ---
+ 
   doc.setFontSize(7);
   doc.setTextColor(148, 163, 184);
   doc.text('Este laudo é um documento digital gerado pelo SafeHash com base nos dados registrados na cadeia de custódia.', 105, pageHeight - 12, { align: 'center' });

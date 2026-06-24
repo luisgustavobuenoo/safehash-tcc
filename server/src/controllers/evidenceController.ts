@@ -1,12 +1,11 @@
-// Local: server/src/controllers/evidenceController.ts
+
 import db from '../lib/db.ts';
 
-// Mapa para gerenciar locks em memória por evidence_id (Requisito da Rubrica: Observabilidade/Lock)
+
 const verificationLocks = new Map<number, Promise<void>>();
 
-/**
- * REGISTRAR EVIDÊNCIA (Cadeia de Custódia)
- */
+
+ 
 export const registerEvidence = async (req: any, res: any) => {
   const {
     userId, fileName, fileHash, fileSize, mimeType,
@@ -20,7 +19,6 @@ export const registerEvidence = async (req: any, res: any) => {
   }
 
   try {
-    // Gera uma assinatura única para o Carimbo do Tempo
     const timestampSignature = `SAFEHASH-AUTH-${Date.now()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
     
     const sql = `
@@ -60,9 +58,7 @@ export const registerEvidence = async (req: any, res: any) => {
   }
 };
 
-/**
- * VERIFICAR INTEGRIDADE (Com implementação de Lock para a Rubrica)
- */
+
 export const verifyIntegrity = async (req: any, res: any) => {
   const { currentHash, originalHash, ip } = req.body;
 
@@ -71,7 +67,7 @@ export const verifyIntegrity = async (req: any, res: any) => {
   }
 
   try {
-    // 1. Busca a evidência pelo hash original
+   
     const [rows]: any = await db.execute(
       'SELECT id, file_name FROM evidences WHERE file_hash = ?',
       [originalHash]
@@ -83,22 +79,21 @@ export const verifyIntegrity = async (req: any, res: any) => {
 
     const evidenceId = rows[0].id;
 
-    // --- INÍCIO DO MECANISMO DE LOCK (RUBRICA) ---
-    // Se já houver uma verificação em curso para esta evidência, aguarda
+  
     if (verificationLocks.has(evidenceId)) {
       await verificationLocks.get(evidenceId);
     }
 
-    // Cria um novo lock para esta operação
+   
     let resolveLock: () => void;
     const lockPromise = new Promise<void>((resolve) => { resolveLock = resolve; });
     verificationLocks.set(evidenceId, lockPromise);
-    // --- FIM DO MECANISMO DE LOCK ---
+  
 
     try {
       const isValid = originalHash.toLowerCase() === currentHash.toLowerCase();
 
-      // Registra o log de verificação (Audit Trail)
+   
       await db.execute(
         'INSERT INTO verification_logs (evidence_id, is_valid, ip_address) VALUES (?, ?, ?)',
         [evidenceId, isValid, ip || req.ip || '127.0.0.1']
@@ -111,7 +106,7 @@ export const verifyIntegrity = async (req: any, res: any) => {
       });
 
     } finally {
-      // Libera o lock e remove do mapa
+    
       resolveLock!();
       verificationLocks.delete(evidenceId);
     }
@@ -122,9 +117,7 @@ export const verifyIntegrity = async (req: any, res: any) => {
   }
 };
 
-/**
- * LISTAR EVIDÊNCIAS
- */
+
 export const listEvidences = async (req: any, res: any) => {
   const { userId } = req.query;
   if (!userId) return res.status(400).json({ error: 'userId é necessário.' });
@@ -141,9 +134,7 @@ export const listEvidences = async (req: any, res: any) => {
   }
 };
 
-/**
- * LISTAR LOGS DE AUDITORIA
- */
+
 export const listLogs = async (req: any, res: any) => {
   const { userId } = req.query;
   if (!userId) return res.status(400).json({ error: 'userId não informado.' });

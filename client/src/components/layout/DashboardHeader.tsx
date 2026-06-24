@@ -10,7 +10,10 @@ import {
 } from 'lucide-react';
 import { useLocation } from 'wouter';
 
-export default function DashboardHeader() {
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+export default function DashboardHeader( ) {
   const [location, setLocation] = useLocation();
   const [userName, setUserName] = useState('Usuário');
   const [userInitials, setUserInitials] = useState('US');
@@ -21,17 +24,24 @@ export default function DashboardHeader() {
       if (!userId) return;
 
       try {
-        const response = await fetch(`http://localhost:5000/api/auth/profile?userId=${userId}`, {
-  headers: {
-    'Authorization': `Bearer ${localStorage.getItem('token' )}`,
-    'Content-Type': 'application/json'
-  }
-});
+       
+        const response = await fetch(`${API_BASE_URL}/auth/profile?userId=${userId}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json'
+          }
+        });
+        
+       
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new TypeError("Oops, não recebemos um JSON do servidor!");
+        }
+
         const data = await response.json();
         if (response.ok && data.full_name) {
           setUserName(data.full_name);
           
-          // Gera as iniciais dinamicamente (Ex: João Silva -> JS)
           const initials = data.full_name
             .split(' ')
             .map((n: string) => n[0])
@@ -40,12 +50,10 @@ export default function DashboardHeader() {
             .slice(0, 2);
           setUserInitials(initials);
           
-          // Sincroniza o localStorage para redundância
           localStorage.setItem('userName', data.full_name);
         }
       } catch (error) {
         console.error("Erro ao buscar dados do cabeçalho:", error);
-        // Fallback: tenta usar o que já está no localStorage se a rede falhar
         const savedName = localStorage.getItem('userName');
         if (savedName) setUserName(savedName);
       }
@@ -65,7 +73,6 @@ export default function DashboardHeader() {
     <header className="bg-white border-b sticky top-0 z-50 w-full shadow-sm">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         
-        {/* Logo SafeHash */}
         <div className="flex items-center gap-4">
           <div 
             className="flex items-center gap-2 cursor-pointer group"
@@ -81,7 +88,6 @@ export default function DashboardHeader() {
           </div>
         </div>
 
-        {/* Navegação Principal */}
         <nav className="flex items-center gap-1 md:gap-2">
           <button 
             onClick={() => setLocation('/dashboard')}
@@ -120,7 +126,6 @@ export default function DashboardHeader() {
           </button>
         </nav>
 
-        {/* Perfil e Logout */}
         <div className="flex items-center gap-2 lg:gap-4">
           <div className="hidden xl:flex items-center gap-2 px-2 py-1 bg-emerald-50 border border-emerald-100 rounded-md">
             <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></div>

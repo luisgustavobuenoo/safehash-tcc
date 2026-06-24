@@ -1,9 +1,8 @@
-// Local: client/src/pages/Register.tsx
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldCheck, User, Mail, Lock, FileText, ArrowRight, CheckCircle2,
-  AlertCircle, Briefcase, Check, X, MapPin, Eye, EyeOff
+  AlertCircle, Briefcase, Check, X, MapPin, Eye, EyeOff, RefreshCw
 } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { toast } from 'sonner';
@@ -16,7 +15,7 @@ const BRAZILIAN_UFS = [
   'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
 ];
 
-export default function Register( ) {
+export default function Register(  ) {
   const [, setLocation] = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -33,7 +32,6 @@ export default function Register( ) {
     confirmPassword: ''
   });
 
-  // --- VALIDAÇÕES ---
   const isValidCPF = (cpf: string) => {
     const cleanCPF = cpf.replace(/\D/g, '');
     if (cleanCPF.length !== 11 || !!cleanCPF.match(/(\d)\1{10}/)) return false;
@@ -145,8 +143,6 @@ export default function Register( ) {
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 font-sans">
       <div className="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-2 bg-white rounded-[32px] shadow-2xl shadow-blue-900/10 overflow-hidden border border-slate-100">
-        
-        {/* Lado Esquerdo (Original) */}
         <div className="hidden lg:flex bg-blue-600 p-12 flex-col justify-between text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl" />
           <div className="relative z-10">
@@ -154,8 +150,7 @@ export default function Register( ) {
               <div className="bg-white/20 p-2.5 rounded-2xl backdrop-blur-md"><ShieldCheck size={28} /></div>
               <span className="text-2xl font-black tracking-tighter">SAFEHASH</span>
             </div>
-            <h1 className="text-4xl font-bold leading-tight mb-6">Sua identidade digital   
-<span className="text-blue-200">blindada e segura.</span></h1>
+            <h1 className="text-4xl font-bold leading-tight mb-6">Sua identidade digital <span className="text-blue-200">blindada e segura.</span></h1>
             <div className="space-y-6">
               {['Cadeia de custódia imutável', 'Conformidade com ISO 27037', 'Assinatura com carimbo de tempo'].map((text, i) => (
                 <div key={i} className="flex items-center gap-3 group">
@@ -167,7 +162,6 @@ export default function Register( ) {
           </div>
         </div>
 
-        {/* Lado Direito */}
         <div className="p-8 lg:p-12 overflow-y-auto max-h-[95vh]">
           <div className="mb-8">
             <h2 className="text-2xl font-bold text-slate-900">Criar Nova Conta</h2>
@@ -256,25 +250,21 @@ export default function Register( ) {
                     {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
+                {formData.confirmPassword && !passwordRequirements.match && <p className="text-[9px] font-bold text-rose-500 uppercase ml-1">As senhas não coincidem</p>}
               </div>
             </div>
 
             <button 
               type="submit"
               disabled={isLoading || !isFormValid}
-              className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all shadow-lg active:scale-95 disabled:active:scale-100 ${
-                isFormValid 
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/20' 
-                  : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
-              }`}
+              className={`w-full py-4 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all shadow-lg ${isFormValid ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/20' : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'}`}
             >
-              {isLoading ? 'CRIANDO CONTA...' : 'CRIAR CONTA AGORA'}
-              {!isLoading && <ArrowRight size={20} />}
+              {isLoading ? <RefreshCw className="animate-spin" size={20} /> : <><ArrowRight size={20} /><span>CRIAR CONTA PROFISSIONAL</span></>}
             </button>
           </form>
 
-          <div className="mt-8 text-center">
-            <p className="text-slate-500 text-sm">Já possui uma conta? <Link href="/login" className="text-blue-600 font-bold hover:underline">Acessar Painel</Link></p>
+          <div className="mt-8 pt-8 border-t border-slate-100 text-center">
+            <p className="text-slate-500 text-sm">Já possui uma credencial? <Link href="/login" className="text-blue-600 font-bold hover:underline">Acessar Painel</Link></p>
           </div>
         </div>
       </div>

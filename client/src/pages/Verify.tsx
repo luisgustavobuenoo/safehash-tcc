@@ -1,4 +1,3 @@
-// Local: client/src/pages/Verify.tsx
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -10,7 +9,7 @@ import DashboardHeader from '@/components/layout/DashboardHeader';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-export default function Verify( ) {
+export default function Verify(  ) {
   const [file, setFile] = useState<File | null>(null);
   const [originalHash, setOriginalHash] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
@@ -36,12 +35,13 @@ export default function Verify( ) {
     try {
       const currentHash = await calculateHash(file);
       
+     
       const response = await fetch(`${API_BASE_URL}/evidence/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           currentHash,
-          originalHash: originalHash.trim(), // Limpa espaços acidentais
+          originalHash: originalHash.trim(), 
           ip: 'SISTEMA-LOCAL' 
         })
       });
@@ -68,8 +68,8 @@ export default function Verify( ) {
   return (
     <div className="min-h-screen bg-slate-50 font-sans pb-12">
       <DashboardHeader />
-
       <main className="max-w-[1440px] mx-auto p-6 lg:p-8">
+        {/* ... resto do seu código original ... */}
         <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Verificador de Integridade</h1>
@@ -93,7 +93,6 @@ export default function Verify( ) {
             <div className="p-8">
               <form onSubmit={handleVerify} className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Upload */}
                   <div className="space-y-3">
                     <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Arquivo para Auditoria</label>
                     <div 
@@ -108,7 +107,6 @@ export default function Verify( ) {
                     </div>
                   </div>
 
-                  {/* Hash Original */}
                   <div className="space-y-3">
                     <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Hash SHA-256 Original</label>
                     <div className="relative">
@@ -134,7 +132,6 @@ export default function Verify( ) {
                 </button>
               </form>
 
-              {/* Resultado */}
               {result && (
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className={`mt-10 p-6 rounded-2xl border-2 ${result.valid ? 'bg-emerald-50 border-emerald-100 text-emerald-800' : 'bg-rose-50 border-rose-100 text-rose-800'}`}>
                   <div className="flex items-start gap-5">

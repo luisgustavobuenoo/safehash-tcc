@@ -1,392 +1,188 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, FileText, Lightbulb, Clock, Shield, Lock, FileCheck, X, CheckCircle2, AlertCircle, Info, Camera } from 'lucide-react';
+import { BookOpen, FileText, Shield, X, CheckCircle2, Bookmark, ArrowRight, Scale, Info, Database, Fingerprint } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function RecursosSection() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
-  const categorias = [
+  const recursos = [
     {
-      id: 'guias',
-      titulo: 'Guias Técnicos e Tutoriais',
-      descricao: 'Documentação prática para implementação de SafeHash em fluxos de perícia criminal focada em imagens.',
-      icon: <BookOpen className="w-6 h-6" />,
-      recursos: [
-        {
-          titulo: 'Como Funciona o SHA-256 em Imagens Forenses',
-          tipo: 'Guia Técnico',
-          duracao: '12 min',
-          descricao: 'Explicação detalhada do algoritmo SHA-256 aplicado a arquivos PNG e JPG, garantindo a integridade absoluta de cada pixel.',
-          tags: ['Criptografia', 'Imagens', 'Técnico'],
-          conteudo: [
-            { type: 'h3', text: 'O Algoritmo SHA-256 na Forense de Imagens' },
-            { type: 'p', text: 'O SHA-256 (Secure Hash Algorithm 256-bit) é o padrão ouro para garantir a integridade de evidências visuais. Ele gera uma "impressão digital" única de 64 caracteres hexadecimais para qualquer arquivo de imagem.' },
-            { type: 'h4', text: 'Por que o SHA-256 é Inviolável em PNG e JPG?' },
-            { type: 'li', text: 'Resistência a Colisões: É matematicamente impossível encontrar duas imagens diferentes que gerem o mesmo hash.' },
-            { type: 'li', text: 'Efeito Avalanche: Se você alterar um único pixel em uma foto JPG ou um canal de transparência em um PNG, o hash resultante será completamente diferente.' },
-            { type: 'li', text: 'Determinismo: O mesmo arquivo de imagem sempre gerará o mesmo hash, permitindo auditorias futuras por qualquer autoridade judicial.' },
-            { type: 'h4', text: 'Implementação SafeHash (Local-First)' },
-            { type: 'p', text: 'Diferente de outras ferramentas, o SafeHash processa o cálculo do hash diretamente no seu navegador. Isso significa que a imagem original (PNG ou JPG) nunca sai do seu computador, garantindo conformidade total com a LGPD e o sigilo profissional pericial.' }
-          ]
-        },
-        {
-          titulo: 'Cadeia de Custódia para Evidências Visuais',
-          tipo: 'Guia Prático',
-          duracao: '18 min',
-          descricao: 'Passo a passo para manter a rastreabilidade completa de fotos e screenshots conforme ISO/IEC 27037.',
-          tags: ['Cadeia de Custódia', 'Imagens', 'Legal'],
-          conteudo: [
-            { type: 'h3', text: 'Cadeia de Custódia de Imagens conforme ISO/IEC 27037' },
-            { type: 'p', text: 'A cadeia de custódia é o conjunto de todos os procedimentos utilizados para manter e documentar a história cronológica da evidência visual, para evitar qualquer alegação de adulteração ou substituição.' },
-            { type: 'h4', text: 'As 4 Fases da Preservação de Imagens:' },
-            { type: 'li', text: 'Identificação: Localizar e identificar a imagem potencial (ex: um print de WhatsApp em PNG ou uma foto de cena de crime em JPG).' },
-            { type: 'li', text: 'Coleta: O ato de remover a imagem do seu local original para um ambiente controlado de registro.' },
-            { type: 'li', text: 'Aquisição: O processo de registrar o estado original da imagem através de hash criptográfico e carimbo do tempo.' },
-            { type: 'li', text: 'Preservação: Garantir que a imagem não sofra alterações durante todo o processo judicial, mantendo o hash original.' },
-            { type: 'h4', text: 'SafeHash e o Art. 158-B do CPP' },
-            { type: 'p', text: 'O SafeHash automatiza a fase de Aquisição e Preservação de imagens, gerando o Protocolo de Integridade que serve como o documento mestre da cadeia de custódia, registrando o "quem", "quando" e "o quê" de forma imutável.' }
-          ]
-        },
-        {
-          titulo: 'Registrando Prints com Validade Jurídica',
-          tipo: 'Tutorial',
-          duracao: '10 min',
-          descricao: 'Como capturar e registrar screenshots (PNG) de redes sociais e conversas com conformidade Art. 158-B CPP.',
-          tags: ['Prints', 'WhatsApp', 'PNG'],
-          conteudo: [
-            { type: 'h3', text: 'Validade Jurídica de Capturas de Tela (Screenshots)' },
-            { type: 'p', text: 'Prints de tela em formato PNG são frequentemente contestados em juízo sob a alegação de que podem ser facilmente editados. Para que tenham valor probatório, precisam de camadas de autenticação técnica.' },
-            { type: 'h4', text: 'Requisitos para Admissibilidade de Prints:' },
-            { type: 'li', text: 'Metadados Preservados: Data, hora e origem da captura registrados no protocolo.' },
-            { type: 'li', text: 'Integridade Criptográfica: Hash SHA-256 gerado no momento exato do registro do print.' },
-            { type: 'li', text: 'Tempestividade: Carimbo do tempo assinado por autoridade certificadora (ICP-Brasil) vinculado ao arquivo PNG.' },
-            { type: 'h4', text: 'Procedimento Recomendado:' },
-            { type: 'p', text: 'Ao utilizar o SafeHash para registrar um print PNG, o sistema gera um Protocolo de Integridade que vincula a imagem ao hash e ao carimbo do tempo. Isso cria uma prova robusta que inverte o ônus da prova: a outra parte precisará provar tecnicamente que o hash é falso, o que é matematicamente impossível.' }
-          ]
-        },
-        {
-          titulo: 'Integridade de Fotos de Cenas de Crime',
-          tipo: 'Guia Técnico',
-          duracao: '15 min',
-          descricao: 'Técnicas para preservar a integridade de fotos JPG e metadados críticos EXIF para fins periciais criminais.',
-          tags: ['Fotos', 'JPG', 'Forense'],
-          conteudo: [
-            { type: 'h3', text: 'Análise de Integridade de Fotos JPG' },
-            { type: 'p', text: 'Fotos digitais em formato JPG contêm informações ocultas chamadas metadados (EXIF), que registram o modelo da câmera, coordenadas GPS e data de criação.' },
-            { type: 'h4', text: 'O que o SafeHash Valida em Fotos JPG:' },
-            { type: 'li', text: 'Preservação de Metadados: Garante que as informações originais de captura não foram alteradas.' },
-            { type: 'li', text: 'Consistência de Hash: Prova que a foto JPG apresentada em juízo é bit-a-bit idêntica à foto coletada originalmente.' },
-            { type: 'li', text: 'Rastreabilidade Temporal: Vincula a foto a um carimbo do tempo ICP-Brasil, provando a existência da imagem naquela data.' },
-            { type: 'h4', text: 'Importância para o Perito:' },
-            { type: 'p', text: 'Em investigações criminais, a validação da foto JPG impede que a defesa alegue "montagem" ou "edição". O SafeHash fornece o laudo técnico de integridade que acompanha a imagem, simplificando o trabalho do perito assistente.' }
-          ]
-        }
+      titulo: 'Integridade de Arquivos via SHA-256',
+      categoria: 'Técnico',
+      tipo: 'Referência Técnica',
+      icon: <Shield size={20} />,
+      descricao: 'Análise aprofundada sobre a imutabilidade matemática e o cálculo de hashes em evidências digitais.',
+      conteudo: [
+        { type: 'h3', text: 'O Algoritmo SHA-256 na Computação Forense' },
+        { type: 'p', text: 'O Secure Hash Algorithm 256-bit é uma função criptográfica de via única (one-way) que gera um resumo digital fixo de 256 bits (64 caracteres hexadecimais). Na perícia digital, ele é o pilar fundamental para garantir o Princípio da Mesmidade.' },
+        { type: 'h4', text: 'Propriedades Criptográficas Aplicadas' },
+        { type: 'li', text: 'Resistência à Colisão: É matematicamente inviável encontrar dois arquivos diferentes que gerem o mesmo hash, garantindo a unicidade absoluta da prova.' },
+        { type: 'li', text: 'Efeito Avalanche: A alteração de um único bit no arquivo original resulta em um hash completamente diferente, tornando qualquer manipulação detectável imediatamente.' },
+        { type: 'li', text: 'Determinismo: O mesmo arquivo sempre gerará o mesmo hash, permitindo a verificação independente por qualquer perito em qualquer lugar do mundo.' },
+        { type: 'h4', text: 'Implementação e Segurança' },
+        { type: 'p', text: 'O sistema utiliza a Web Crypto API nativa do navegador para realizar o cálculo localmente. Isso implementa o conceito de "Privacy by Design", onde a evidência sensível nunca é transmitida pela rede para o cálculo do hash, preservando o sigilo da investigação e evitando o tráfego de dados sensíveis em servidores externos.' },
+        { type: 'p', text: 'Diferente de algoritmos obsoletos como MD5 ou SHA-1, o SHA-256 é o padrão atual recomendado pelo NIST (FIPS 180-4) para garantir a integridade de dados em sistemas que exigem alta segurança e validade jurídica.' }
       ]
     },
     {
-      id: 'docs',
-      titulo: 'Documentação Técnica e Normativa',
-      descricao: 'Referência completa de especificações técnicas e conformidade com legislação para imagens.',
-      icon: <FileText className="w-6 h-6" />,
-      recursos: [
-        {
-          titulo: 'Especificação do Protocolo de Integridade SafeHash',
-          tipo: 'Documentação Técnica',
-          duracao: 'Referência',
-          descricao: 'Detalhamento completo da estrutura, assinatura digital e validação do Protocolo de Integridade para arquivos PNG e JPG.',
-          tags: ['Protocolo', 'Assinatura Digital', 'ICP-Brasil'],
-          conteudo: [
-            { type: 'h3', text: 'Especificação Técnica do Protocolo SafeHash' },
-            { type: 'p', text: 'O Protocolo de Integridade SafeHash é um documento estruturado que consolida todas as informações forenses de uma evidência visual (PNG ou JPG).' },
-            { type: 'h4', text: 'Estrutura do Documento para Imagens:' },
-            { type: 'li', text: 'Header: Versão do protocolo e identificador único do registro.' },
-            { type: 'li', text: 'Image Metadata: Nome original, tamanho, tipo MIME (image/png ou image/jpeg) e metadados EXIF.' },
-            { type: 'li', text: 'Cryptographic Proof: Hash SHA-256 calculado localmente sobre o binário da imagem.' },
-            { type: 'li', text: 'Temporal Proof: Token de Carimbo do Tempo (RFC 3161) assinado pela ICP-Brasil.' },
-            { type: 'li', text: 'Digital Signature: Assinatura digital do SafeHash garantindo a autenticidade do protocolo.' },
-            { type: 'h4', text: 'Validação Pública:' },
-            { type: 'p', text: 'O protocolo pode ser validado de forma independente através do nosso Verificador Público ou por qualquer ferramenta que suporte o padrão RFC 3161 e SHA-256, garantindo que a prova não dependa exclusivamente do SafeHash para existir.' }
-          ]
-        },
-        {
-          titulo: 'Conformidade com Art. 158-B do CPP',
-          tipo: 'Documentação Legal',
-          duracao: 'Referência',
-          descricao: 'Análise jurídica completa de como SafeHash atende aos requisitos do Art. 158-B CPP para provas visuais.',
-          tags: ['Legislação', 'CPP', 'Admissibilidade'],
-          conteudo: [
-            { type: 'h3', text: 'Análise Jurídica: SafeHash e o Pacote Anticrime' },
-            { type: 'p', text: 'A Lei 13.964/2019 (Pacote Anticrime) introduziu o Art. 158-B no Código de Processo Penal, definindo as etapas da cadeia de custódia para vestígios digitais.' },
-            { type: 'h4', text: 'Requisitos Legais Atendidos para Imagens:' },
-            { type: 'li', text: 'Fixação: Descrição detalhada da imagem e sua origem (Metadados SafeHash).' },
-            { type: 'li', text: 'Coleta: Registro do momento exato da coleta da imagem (Carimbo do Tempo).' },
-            { type: 'li', text: 'Acondicionamento: Garantia de que a imagem PNG/JPG não será alterada (Hash SHA-256).' },
-            { type: 'li', text: 'Rastreamento: Identificação de quem realizou o registro da evidência (Logs de Auditoria).' },
-            { type: 'h4', text: 'Jurisprudência:' },
-            { type: 'p', text: 'Tribunais Superiores têm anulado provas visuais que não apresentam hash criptográfico. O uso do SafeHash elimina esse risco jurídico, fornecendo a prova técnica de integridade exigida pelos magistrados modernos.' }
-          ]
-        },
-        {
-          titulo: 'Implementação de ISO/IEC 27037 em SafeHash',
-          tipo: 'Documentação Técnica',
-          duracao: 'Referência',
-          descricao: 'Mapeamento das práticas de perícia digital conforme norma internacional ISO/IEC 27037 para imagens.',
-          tags: ['ISO/IEC 27037', 'Perícia', 'Norma'],
-          conteudo: [
-            { type: 'h3', text: 'Padrões Internacionais: ISO/IEC 27037' },
-            { type: 'p', text: 'A norma ISO/IEC 27037 fornece diretrizes para atividades específicas no manuseio de evidências digitais, com foco em confiabilidade e repetibilidade.' },
-            { type: 'h4', text: 'Princípios Fundamentais Aplicados a Imagens:' },
-            { type: 'li', text: 'Relevância: A imagem deve ser coletada de forma a manter sua utilidade em juízo.' },
-            { type: 'li', text: 'Confiabilidade: O processo de aquisição do hash da imagem deve ser repetível e auditável.' },
-            { type: 'li', text: 'Suficiência: Devem ser coletados metadados suficientes para contextualizar a foto ou print.' },
-            { type: 'h4', text: 'Auditoria de Processo:' },
-            { type: 'p', text: 'O SafeHash foi desenhado seguindo o workflow da ISO 27037, garantindo que mesmo usuários não-técnicos sigam as melhores práticas internacionais de forense digital ao realizar um registro de imagem.' }
-          ]
-        },
-        {
-          titulo: 'Formatos Suportados: PNG e JPG',
-          tipo: 'Referência Técnica',
-          duracao: 'Referência',
-          descricao: 'Detalhamento técnico de como arquivos PNG e JPG são processados para garantir a imutabilidade do hash.',
-          tags: ['PNG', 'JPG', 'Técnico'],
-          conteudo: [
-            { type: 'h3', text: 'Matriz de Compatibilidade de Imagens' },
-            { type: 'p', text: 'O SafeHash foca nos dois formatos de imagem mais utilizados no sistema de justiça para garantir máxima compatibilidade e rigor técnico.' },
-            { type: 'h4', text: 'Formatos Suportados:' },
-            { type: 'li', text: 'PNG (Portable Network Graphics): Ideal para screenshots e prints de tela, preservando transparência e sem perda de qualidade por compressão.' },
-            { type: 'li', text: 'JPG/JPEG (Joint Photographic Experts Group): O padrão para fotografias de cenas de crime e documentos, otimizado para armazenamento de metadados EXIF.' },
-            { type: 'h4', text: 'Tratamento Técnico:' },
-            { type: 'p', text: 'Cada arquivo é lido como um fluxo de dados binários (Blob). O hash SHA-256 é calculado sobre a totalidade dos dados do arquivo, garantindo que qualquer alteração, por menor que seja, invalide o protocolo.' },
-            { type: 'h4', text: 'Privacidade:' },
-            { type: 'p', text: 'O processamento é 100% local. Suas imagens PNG e JPG nunca são enviadas para nossos servidores durante o cálculo do hash.' }
-          ]
-        }
+      titulo: 'Protocolo de Cadeia de Custódia (CPP)',
+      categoria: 'Jurídico',
+      tipo: 'Referência Jurídica',
+      icon: <Scale size={20} />,
+      descricao: 'Guia de conformidade com o Art. 158-B do Código de Processo Penal e a preservação do vestígio.',
+      conteudo: [
+        { type: 'h3', text: 'Conformidade com a Lei 13.964/2019 (Pacote Anticrime)' },
+        { type: 'p', text: 'A Cadeia de Custódia é o conjunto de todos os procedimentos utilizados para manter e documentar a história cronológica do vestígio digital, garantindo sua admissibilidade em juízo conforme o Art. 158-B do CPP.' },
+        { type: 'h4', text: 'As 10 Etapas da Cadeia de Custódia' },
+        { type: 'p', text: 'O SafeHash foca primordialmente nas etapas críticas de Fixação e Coleta, garantindo que o registro inicial seja imutável.' },
+        { type: 'li', text: 'Fixação: Descrição detalhada do vestígio conforme se encontra no local ou no dispositivo.' },
+        { type: 'li', text: 'Coleta: Ato de transferir o vestígio para um meio onde possa ser preservado.' },
+        { type: 'li', text: 'Acondicionamento: Proteção do vestígio contra alterações externas.' },
+        { type: 'h4', text: 'Inversão do Ônus da Prova' },
+        { type: 'p', text: 'Ao utilizar um sistema que gera hashes e registros temporais auditáveis, o operador do direito cria uma presunção de veracidade. Qualquer alegação de adulteração deve ser provada pela parte contrária através de uma contraperícia técnica, já que o sistema fornece a evidência matemática da integridade desde o momento zero.' }
+      ]
+    },
+    {
+      titulo: 'Diretrizes da Norma ISO/IEC 27037',
+      categoria: 'Doutrina',
+      tipo: 'Referência Normativa',
+      icon: <FileText size={20} />,
+      descricao: 'Padrões internacionais para identificação, coleta, aquisição e preservação de evidência digital.',
+      conteudo: [
+        { type: 'h3', text: 'Padronização Internacional e Rigor Científico' },
+        { type: 'p', text: 'A norma ISO/IEC 27037 estabelece diretrizes para atividades específicas no manuseio de evidências digitais, focando na confiabilidade e suficiência da prova para fins de auditoria e justiça.' },
+        { type: 'h4', text: 'Papéis Definidos pela Norma' },
+        { type: 'li', text: 'DEFR (Digital Evidence First Responder): Pessoa autorizada a identificar e coletar a evidência no local.' },
+        { type: 'li', text: 'DES (Digital Evidence Specialist): Especialista que realiza a análise técnica profunda.' },
+        { type: 'h4', text: 'Princípios Fundamentais' },
+        { type: 'p', text: 'O SafeHash segue os princípios de repetibilidade e reprodutibilidade. Se outro perito utilizar o mesmo arquivo e o mesmo algoritmo SHA-256, ele obterá exatamente o mesmo resultado, validando o trabalho do perito original.' },
+        { type: 'p', text: 'A norma também enfatiza a importância de minimizar a manipulação da evidência original. O SafeHash atende a isso ao processar os dados localmente e gerar um "lacre digital" antes mesmo de qualquer armazenamento permanente.' }
+      ]
+    },
+    {
+      titulo: 'Metadados e Preservação de Contexto',
+      categoria: 'Forense',
+      tipo: 'Referência Técnica',
+      icon: <Fingerprint size={20} />,
+      descricao: 'A importância dos metadados (EXIF, MAC) na validação da autenticidade de arquivos digitais.',
+      conteudo: [
+        { type: 'h3', text: 'Além do Conteúdo: O Valor dos Metadados' },
+        { type: 'p', text: 'Um arquivo digital não é composto apenas por seus dados visíveis (como os pixels de uma foto), mas também por metadados que descrevem sua origem, autoria e histórico de modificação.' },
+        { type: 'h4', text: 'Elementos de Verificação Contextual' },
+        { type: 'li', text: 'Dados EXIF: Informações de GPS, modelo da câmera, data e hora exata da captura em fotografias.' },
+        { type: 'li', text: 'Timestamps MAC: Datas de Modificação, Acesso e Criação registradas pelo sistema de arquivos.' },
+        { type: 'li', text: 'Integridade Estrutural: Verificação se o arquivo mantém seu cabeçalho (header) original e não foi corrompido ou injetado com dados maliciosos.' },
+        { type: 'h4', text: 'O Papel do SafeHash na Preservação' },
+        { type: 'p', text: 'Ao gerar o hash do arquivo completo, o SafeHash "congela" não apenas o que vemos, mas todos os metadados ocultos. Se um editor de metadados for utilizado para alterar a localização GPS de uma foto, o hash será invalidado, revelando a fraude contextual que muitas vezes passa despercebida em análises superficiais.' }
       ]
     }
   ];
 
   return (
-    <section className="py-20 md:py-28 bg-gradient-to-b from-white to-slate-50">
-      <div className="container mx-auto px-4">
-        {/* Header */}
-        <motion.div
-          className="mb-20"
+    <section className="py-16 md:py-24 bg-slate-50">
+      <div className="container mx-auto px-4 max-w-6xl">
+        <motion.div 
+          className="mb-16 text-center"
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6">
-            Central de Conhecimento Forense
-          </h1>
-          <div className="w-16 h-1 bg-blue-900 mb-6"></div>
-          <p className="text-lg text-slate-600 max-w-3xl leading-relaxed">
-            Biblioteca completa de recursos técnicos, jurídicos e educacionais para dominar 
-            a perícia digital e a preservação de provas visuais com SafeHash.
-          </p>
+          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 tracking-tight">Central de Recursos Forenses</h2>
+          <div className="w-16 h-1 bg-blue-600 mx-auto mb-6"></div>
+          <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">Documentação técnica e jurídica para fundamentação de laudos, perícias e estratégias defensivas.</p>
         </motion.div>
 
-        {/* Categorias */}
-        <div className="space-y-16">
-          {categorias.map((cat, catIdx) => (
-            <motion.div
-              key={cat.id}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {recursos.map((rec, idx) => (
+            <motion.div 
+              key={idx} 
+              className="bg-white p-8 rounded-[32px] border border-slate-200 shadow-sm hover:shadow-2xl transition-all group cursor-pointer flex flex-col min-h-[420px] relative" 
+              onClick={() => setSelectedItem(rec)}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: catIdx * 0.1 }}
+              transition={{ duration: 0.5, delay: idx * 0.1 }}
               viewport={{ once: true }}
             >
-              {/* Header da Categoria */}
-              <div className="flex items-start gap-4 mb-8">
-                <div className="p-3 bg-blue-900 text-white rounded-lg">{cat.icon}</div>
-                <div className="flex-1">
-                  <h2 className="text-2xl font-bold text-slate-900 mb-2">{cat.titulo}</h2>
-                  <p className="text-slate-600">{cat.descricao}</p>
-                </div>
+              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                {rec.icon}
               </div>
-
-              {/* Grid de Recursos */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {cat.recursos.map((rec, idx) => (
-                  <motion.div
-                    key={idx}
-                    className="border border-slate-200 rounded-lg p-6 bg-white shadow-sm hover:shadow-md transition-all cursor-pointer group"
-                    whileHover={{ y: -2 }}
-                    onClick={() => setSelectedItem(rec)}
-                  >
-                    {/* Tipo e Duração */}
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="inline-block px-3 py-1 bg-blue-100 text-blue-900 text-xs font-bold rounded">
-                        {rec.tipo}
-                      </span>
-                      <div className="flex items-center gap-1 text-slate-500 text-xs">
-                        <Clock className="w-3 h-3" />
-                        {rec.duracao}
-                      </div>
-                    </div>
-
-                    {/* Título */}
-                    <h3 className="text-lg font-bold text-slate-900 mb-3 group-hover:text-blue-900 transition-colors">
-                      {rec.titulo}
-                    </h3>
-
-                    {/* Descrição */}
-                    <p className="text-slate-600 text-sm mb-6 leading-relaxed line-clamp-3">
-                      {rec.descricao}
-                    </p>
-
-                    {/* Tags (#) e Link Visual */}
-                    <div className="flex items-center justify-between">
-                      <div className="flex flex-wrap gap-2">
-                        {rec.tags.map((tag, tagIdx) => (
-                          <span key={tagIdx} className="text-[10px] font-bold text-blue-900 bg-slate-100 px-2 py-0.5 rounded uppercase">
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
-                      <span className="text-blue-900 text-xs font-bold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        Ler mais <Info className="w-3 h-3" />
-                      </span>
-                    </div>
-                  </motion.div>
-                ))}
+              <div className="flex-grow">
+                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-4 block">{rec.categoria}</span>
+                <h3 className="text-lg font-bold text-slate-900 mb-4 leading-tight group-hover:text-blue-700 transition-colors">{rec.titulo}</h3>
+                <p className="text-xs text-slate-500 leading-relaxed mb-6 line-clamp-4">{rec.descricao}</p>
+              </div>
+              <div className="pt-6 border-t border-slate-50 flex items-center justify-between text-[9px] font-bold uppercase tracking-widest">
+                <span className="flex items-center gap-2 text-slate-400">
+                  <Bookmark size={12} className="text-blue-500" /> {rec.tipo}
+                </span>
+                <span className="text-blue-600 flex items-center gap-1">Acessar <ArrowRight size={12} /></span>
               </div>
             </motion.div>
           ))}
         </div>
 
-        {/* Seção de Pilares */}
-        <motion.div
-          className="mt-20 p-8 bg-slate-50 rounded-lg border border-slate-200"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <h3 className="text-2xl font-bold text-slate-900 mb-8">Pilares da Integridade SafeHash</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                icon: <Shield className="w-6 h-6" />,
-                titulo: 'Conformidade Legal',
-                descricao: 'Garantia total de admissibilidade conforme Art. 158-B do CPP.'
-              },
-              {
-                icon: <Lock className="w-6 h-6" />,
-                titulo: 'Segurança Criptográfica',
-                descricao: 'Implementação rigorosa do algoritmo SHA-256 localmente.'
-              },
-              {
-                icon: <Camera className="w-6 h-6" />,
-                titulo: 'Foco em Imagens',
-                descricao: 'Especialização técnica em preservação de arquivos PNG e JPG.'
-              }
-            ].map((item, idx) => (
-              <div key={idx} className="p-6 bg-white rounded-lg border border-slate-200">
-                <div className="text-blue-900 mb-4">{item.icon}</div>
-                <h4 className="font-bold text-slate-900 mb-2">{item.titulo}</h4>
-                <p className="text-slate-600 text-sm">{item.descricao}</p>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        {/* CTA Final */}
-        <motion.div
-          className="mt-16 p-8 bg-blue-900 text-white rounded-lg border border-blue-800"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <div>
-              <h3 className="text-2xl font-bold mb-2">Pronto para conhecer o SafeHash na prática?</h3>
-              <p className="text-blue-100">
-                Comece a registrar suas provas visuais agora mesmo e garanta a integridade dos seus laudos.
-              </p>
-            </div>
-            <Button className="bg-white text-blue-900 hover:bg-blue-50 font-bold px-8 py-6 text-lg shadow-lg">
-              Começar Registro Agora
-            </Button>
-          </div>
-        </motion.div>
-
-        {/* Modal Forense */}
         <AnimatePresence>
           {selectedItem && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 40 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col"
+                exit={{ opacity: 0, scale: 0.95, y: 40 }}
+                className="bg-white rounded-[40px] shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col border border-white/10"
               >
-                {/* Modal Header */}
-                <div className="bg-slate-900 p-6 text-white flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white/10 rounded-lg">
-                      <FileText className="w-5 h-5" />
-                    </div>
+               
+                <div className="p-8 bg-slate-950 text-white flex justify-between items-center shrink-0">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-blue-600 rounded-2xl shadow-lg shadow-blue-900/20">{selectedItem.icon}</div>
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400">
-                        {selectedItem.tipo} • {selectedItem.duracao}
-                      </span>
-                      <h2 className="text-xl font-bold">{selectedItem.titulo}</h2>
+                      <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1 block">{selectedItem.tipo}</span>
+                      <h3 className="text-xl md:text-2xl font-bold leading-tight">{selectedItem.titulo}</h3>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => setSelectedItem(null)}
-                    className="p-2 hover:bg-white/10 rounded-full transition-colors"
-                  >
-                    <X className="w-6 h-6" />
+                  <button onClick={() => setSelectedItem(null)} className="p-3 hover:bg-white/10 rounded-full transition-colors">
+                    <X size={24} />
                   </button>
                 </div>
 
-                {/* Modal Content */}
-                <div className="p-8 overflow-y-auto prose prose-slate max-w-none">
-                  <div className="flex flex-wrap gap-2 mb-8">
-                    {selectedItem.tags.map((tag: string, i: number) => (
-                      <span key={i} className="text-xs font-bold text-blue-900 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-
-                 
-                  <div className="text-slate-700 leading-relaxed space-y-6">
-                    {selectedItem.conteudo.map((item: any, i: number) => {
-                      if (item.type === 'h3') return <h3 key={i} className="text-2xl font-bold text-slate-900 mt-8 mb-4">{item.text}</h3>;
-                      if (item.type === 'h4') return <h4 key={i} className="text-lg font-bold text-slate-900 mt-6 mb-3">{item.text}</h4>;
-                      if (item.type === 'li') return (
-                        <div key={i} className="flex gap-3 ml-4 mb-2">
-                          <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0 mt-1" />
-                          <span>{item.text}</span>
+                
+                <div className="p-10 overflow-y-auto bg-white flex-grow">
+                  <div className="space-y-10 max-w-2xl mx-auto">
+                    {selectedItem.conteudo.map((block: any, i: number) => {
+                      if (block.type === 'h3') return <h3 key={i} className="text-2xl font-bold text-slate-900 border-b-4 border-blue-600 w-fit pb-1">{block.text}</h3>;
+                      if (block.type === 'h4') return <h4 key={i} className="text-xs font-black text-blue-600 uppercase tracking-widest pt-4">{block.text}</h4>;
+                      if (block.type === 'p') return <p key={i} className="text-slate-600 leading-relaxed text-base">{block.text}</p>;
+                      if (block.type === 'li') return (
+                        <div key={i} className="flex items-start gap-4 bg-slate-50 p-6 rounded-[24px] border border-slate-100 group hover:border-blue-200 transition-all hover:shadow-sm">
+                          <div className="w-6 h-6 bg-white rounded-lg shadow-sm flex items-center justify-center flex-shrink-0 mt-1">
+                            <CheckCircle2 className="w-4 h-4 text-green-600" />
+                          </div>
+                          <div>
+                            <p className="text-slate-800 text-sm font-bold leading-relaxed">{block.text.split(':')[0]}:</p>
+                            <p className="text-slate-600 text-sm mt-1">{block.text.split(':')[1]}</p>
+                          </div>
                         </div>
                       );
-                      if (item.type === 'p') return <p key={i} className="mb-4">{item.text}</p>;
                       return null;
                     })}
                   </div>
-
-                  {/* Nota de Rodapé Forense */}
-                  <div className="mt-12 p-4 bg-slate-50 border-l-4 border-blue-900 rounded flex gap-4">
-                    <AlertCircle className="w-6 h-6 text-blue-900 flex-shrink-0" />
-                    <p className="text-xs text-slate-600 italic">
-                      Este documento faz parte da base de conhecimento técnica do SafeHash. As informações aqui contidas visam auxiliar peritos e advogados na correta preservação de evidências visuais (PNG/JPG) conforme a legislação brasileira vigente.
+                  
+                  <div className="mt-12 p-8 bg-blue-50 rounded-[32px] border border-blue-100 flex items-start gap-5 max-w-2xl mx-auto">
+                    <div className="p-2 bg-white rounded-xl shadow-sm"><Info className="w-6 h-6 text-blue-600" /></div>
+                    <p className="text-xs text-blue-800 leading-relaxed font-medium">
+                      Este documento integra a biblioteca técnica do projeto SafeHash. As informações aqui contidas são baseadas em padrões internacionais de forense digital e legislação brasileira vigente.
                     </p>
                   </div>
                 </div>
 
-                {/* Modal Footer */}
-                <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end">
-                  <Button 
-                    onClick={() => setSelectedItem(null)}
-                    className="bg-slate-900 hover:bg-slate-800 text-white px-8"
-                  >
-                    Fechar Documento
-                  </Button>
+               
+                <div className="p-6 border-t border-slate-100 bg-slate-50 flex items-center justify-between px-10 shrink-0">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
+                    <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">SafeHash DocID: SH-{Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
+                  </div>
+                  <Button size="lg" className="rounded-2xl px-10 font-bold shadow-lg shadow-blue-600/20" onClick={() => setSelectedItem(null)}>Concluir Leitura</Button>
                 </div>
               </motion.div>
             </div>
@@ -394,5 +190,5 @@ export default function RecursosSection() {
         </AnimatePresence>
       </div>
     </section>
-  )
+  );
 }
