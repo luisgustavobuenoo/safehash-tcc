@@ -14,10 +14,30 @@ async function startServer() {
   const app = express();
   const server = createServer(app);
 
+  
+  const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+    'http://localhost:3000',
+    'http://localhost:5000'
+  ];
+
   app.use(cors({
-    origin: '*', 
+    origin: (origin, callback) => {
+      
+      if (!origin) {
+        return callback(null, true);
+      }
+      
+     
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('CORS não permitido para esta origem'));
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    maxAge: 3600
   }));
 
   app.use(express.json());

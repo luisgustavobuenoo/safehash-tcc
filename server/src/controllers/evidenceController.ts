@@ -1,24 +1,28 @@
-
 import db from '../lib/db.ts';
-
+import { RegisterEvidenceSchema, VerifyIntegritySchema } from '../schemas/validation.ts';
 
 const verificationLocks = new Map<number, Promise<void>>();
 
-
  
 export const registerEvidence = async (req: any, res: any) => {
-  const {
-    userId, fileName, fileHash, fileSize, mimeType,
-    exifMetadata, gpsLocation, clientName, professionalTitle,
-    professionalRegistry, professionalId, professionalUf,
-    description
-  } = req.body;
-
-  if (!userId || !fileName || !fileHash) {
-    return res.status(400).json({ error: 'Dados obrigatórios ausentes (userId, fileName ou fileHash).' });
-  }
-
   try {
+  
+    const parsed = RegisterEvidenceSchema.safeParse(req.body);
+    
+    if (!parsed.success) {
+      return res.status(400).json({ 
+        error: 'Validação falhou',
+        details: parsed.error.flatten()
+      });
+    }
+
+    const {
+      userId, fileName, fileHash, fileSize, mimeType,
+      exifMetadata, gpsLocation, clientName, professionalTitle,
+      professionalRegistry, professionalId, professionalUf,
+      description
+    } = parsed.data;
+
     const timestampSignature = `SAFEHASH-AUTH-${Date.now()}-${Math.random().toString(36).substring(7).toUpperCase()}`;
     
     const sql = `
@@ -60,14 +64,19 @@ export const registerEvidence = async (req: any, res: any) => {
 
 
 export const verifyIntegrity = async (req: any, res: any) => {
-  const { currentHash, originalHash, ip } = req.body;
-
-  if (!currentHash || !originalHash) {
-    return res.status(400).json({ error: 'Hashes para comparação não fornecidos.' });
-  }
-
   try {
-   
+    
+    const parsed = VerifyIntegritySchema.safeParse(req.body);
+    
+    if (!parsed.success) {
+      return res.status(400).json({ 
+        error: 'Validação falhou',
+        details: parsed.error.flatten()
+      });
+    }
+
+    const { currentHash, originalHash, ip } = parsed.data;
+
     const [rows]: any = await db.execute(
       'SELECT id, file_name FROM evidences WHERE file_hash = ?',
       [originalHash]

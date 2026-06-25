@@ -2,14 +2,29 @@ import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs'; 
 import db from '../lib/db.ts';
+import { RegisterSchema, LoginSchema } from '../schemas/validation.ts';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'pericia-forense-segredo-muito-seguro';
+const JWT_SECRET = process.env.JWT_SECRET;
+
+if (!JWT_SECRET) {
+  console.error("❌ ERRO CRÍTICO: JWT_SECRET não definido no arquivo .env");
+}
 
 export const register = async (req: Request, res: Response) => {
-  const { fullName, email, password, cpf, professionalType, professionalId, professionalUf } = req.body;
-  
   try {
-   
+    
+    const parsed = RegisterSchema.safeParse(req.body);
+    
+    if (!parsed.success) {
+      return res.status(400).json({ 
+        error: 'Validação falhou',
+        details: parsed.error.flatten()
+      });
+    }
+
+    const { fullName, email, password, cpf, professionalType, professionalId, professionalUf } = parsed.data;
+    
+    
     const [existing]: any = await db.execute('SELECT id FROM users WHERE email = ? OR cpf = ?', [email, cpf]);
     if (existing.length > 0) {
       return res.status(400).json({ error: "E-mail ou CPF já cadastrados." });
@@ -18,7 +33,7 @@ export const register = async (req: Request, res: Response) => {
    
     const hash = await bcrypt.hash(password, 10);
 
-   
+    
     await db.execute(
       'INSERT INTO users (full_name, email, password_hash, cpf, professional_type, professional_id, professional_uf) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [fullName, email, hash, cpf, professionalType, professionalId, professionalUf]
@@ -26,17 +41,26 @@ export const register = async (req: Request, res: Response) => {
 
     res.status(201).json({ message: "Usuário criado com sucesso!" });
   } catch (err) {
-    console.error("Erro detalhado no registro:", err);
-    res.status(500).json({ error: "Erro ao registrar usuário." });
+    console.error("Erro no registro:", err);
+    res.status(500).json({ error: "Erro interno ao registrar usuário." });
   }
 };
 
 export const login = async (req: Request, res: Response) => {
-
-  const { email, cpf, password } = req.body;
-  
   try {
-  
+    
+    const parsed = LoginSchema.safeParse(req.body);
+    
+    if (!parsed.success) {
+      return res.status(400).json({ 
+        error: 'Validação falhou',
+        details: parsed.error.flatten()
+      });
+    }
+
+    const { email, cpf, password } = parsed.data;
+    
+    
     const [rows]: any = await db.execute(
       'SELECT * FROM users WHERE email = ? OR cpf = ?', 
       [email || '', cpf || '']
@@ -45,7 +69,8 @@ export const login = async (req: Request, res: Response) => {
     const user = rows[0];
 
     if (user && await bcrypt.compare(password, user.password_hash)) {
-      const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '1d' });
+    
+      const token = jwt.sign({ id: user.id }, JWT_SECRET as string, { expiresIn: '1d' });
       
       return res.json({ 
         token, 
@@ -60,9 +85,9 @@ export const login = async (req: Request, res: Response) => {
       });
     }
     
-    res.status(401).json({ error: "Credenciais inválidas (E-mail/CPF ou Senha incorretos)." });
+    res.status(401).json({ error: "Credenciais inválidas." });
   } catch (err) {
-    console.error("Erro detalhado no login:", err);
+    console.error("Erro no login:", err);
     res.status(500).json({ error: "Erro interno no servidor." });
   }
 };
