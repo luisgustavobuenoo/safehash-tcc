@@ -59,7 +59,7 @@ export const RegisterSchema = z.object({
     .regex(/^[A-Z]{2}$/, 'UF inválida')
 });
 
-// ✅ Validação de Login
+//  Validação de Login
 export const LoginSchema = z.object({
   email: z.string().email('Email inválido').optional(),
   cpf: z.string().optional(),
@@ -69,7 +69,7 @@ export const LoginSchema = z.object({
   { message: 'Email ou CPF é necessário', path: ['email'] }
 );
 
-// ✅ Validação de Registro de Evidência
+//  Validação de Registro de Evidência
 export const RegisterEvidenceSchema = z.object({
   userId: z.number().int().positive('User ID inválido'),
   fileName: z
@@ -91,7 +91,7 @@ export const RegisterEvidenceSchema = z.object({
   exifMetadata: z.record(z.any()).optional()
 });
 
-// ✅ Validação de Verificação de Integridade
+//  Validação de Verificação de Integridade
 export const VerifyIntegritySchema = z.object({
   currentHash: z
     .string()

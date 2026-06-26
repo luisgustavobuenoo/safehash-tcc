@@ -6,13 +6,13 @@ import { RegisterSchema, LoginSchema } from '../schemas/validation.ts';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+
 if (!JWT_SECRET) {
-  console.error("❌ ERRO CRÍTICO: JWT_SECRET não definido no arquivo .env");
+  throw new Error("❌ ERRO FATAL: JWT_SECRET não definido no arquivo .env ou nas variáveis de ambiente do servidor.");
 }
 
 export const register = async (req: Request, res: Response) => {
   try {
-    
     const parsed = RegisterSchema.safeParse(req.body);
     
     if (!parsed.success) {
@@ -24,16 +24,13 @@ export const register = async (req: Request, res: Response) => {
 
     const { fullName, email, password, cpf, professionalType, professionalId, professionalUf } = parsed.data;
     
-    
     const [existing]: any = await db.execute('SELECT id FROM users WHERE email = ? OR cpf = ?', [email, cpf]);
     if (existing.length > 0) {
       return res.status(400).json({ error: "E-mail ou CPF já cadastrados." });
     }
 
-   
     const hash = await bcrypt.hash(password, 10);
 
-    
     await db.execute(
       'INSERT INTO users (full_name, email, password_hash, cpf, professional_type, professional_id, professional_uf) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [fullName, email, hash, cpf, professionalType, professionalId, professionalUf]
@@ -48,7 +45,6 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    
     const parsed = LoginSchema.safeParse(req.body);
     
     if (!parsed.success) {
@@ -60,7 +56,6 @@ export const login = async (req: Request, res: Response) => {
 
     const { email, cpf, password } = parsed.data;
     
-    
     const [rows]: any = await db.execute(
       'SELECT * FROM users WHERE email = ? OR cpf = ?', 
       [email || '', cpf || '']
@@ -69,7 +64,7 @@ export const login = async (req: Request, res: Response) => {
     const user = rows[0];
 
     if (user && await bcrypt.compare(password, user.password_hash)) {
-    
+      
       const token = jwt.sign({ id: user.id }, JWT_SECRET as string, { expiresIn: '1d' });
       
       return res.json({ 
