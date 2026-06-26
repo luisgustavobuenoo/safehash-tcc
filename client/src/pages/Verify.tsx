@@ -9,7 +9,7 @@ import DashboardHeader from '@/components/layout/DashboardHeader';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-export default function Verify(  ) {
+export default function Verify( ) {
   const [file, setFile] = useState<File | null>(null);
   const [originalHash, setOriginalHash] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
@@ -35,14 +35,12 @@ export default function Verify(  ) {
     try {
       const currentHash = await calculateHash(file);
       
-     
       const response = await fetch(`${API_BASE_URL}/evidence/verify`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           currentHash,
-          originalHash: originalHash.trim(), 
-          ip: 'SISTEMA-LOCAL' 
+          originalHash: originalHash.trim()
         })
       });
 
@@ -69,7 +67,6 @@ export default function Verify(  ) {
     <div className="min-h-screen bg-slate-50 font-sans pb-12">
       <DashboardHeader />
       <main className="max-w-[1440px] mx-auto p-6 lg:p-8">
-        {/* ... resto do seu código original ... */}
         <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Verificador de Integridade</h1>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Upload, List, Database, RefreshCw, Clock, HardDrive, Search,
-  ExternalLink, User, CheckCircle2, Shield, Fingerprint
+  ExternalLink, User, CheckCircle2, Shield, Fingerprint, Copy
 } from 'lucide-react';
 import { toast } from 'sonner';
 import DashboardHeader from '@/components/layout/DashboardHeader';
@@ -10,7 +10,7 @@ import { generateCertificate } from '../lib/generateCertificate';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-export default function Dashboard(  ) {
+export default function Dashboard(   ) {
   const [fileHash, setFileHash] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>('');
   const [fileSize, setFileSize] = useState<number>(0);
@@ -114,6 +114,13 @@ export default function Dashboard(  ) {
     ev.client_name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success('Hash copiado para a área de transferência!', {
+      style: { background: '#eff6ff', color: '#1e40af', border: '1px solid #bfdbfe' }
+    });
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans pb-12">
       <DashboardHeader />
@@ -200,13 +207,22 @@ export default function Dashboard(  ) {
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }} 
                     animate={{ opacity: 1, y: 0 }} 
-                    className="mb-6 p-6 bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl"
+                    className="mb-6 p-6 bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl relative group"
                   >
-                    <div className="flex items-center gap-2 mb-3">
-                      <Fingerprint size={18} className="text-blue-400" />
-                      <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">Hash SHA-256 Gerado</span>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <Fingerprint size={18} className="text-blue-400" />
+                        <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">Hash SHA-256 Gerado</span>
+                      </div>
+                      <button 
+                        onClick={() => copyToClipboard(fileHash)}
+                        className="p-1.5 bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition-all"
+                        title="Copiar Hash"
+                      >
+                        <Copy size={14} />
+                      </button>
                     </div>
-                    <p className="text-[13px] font-mono text-white font-bold break-all leading-relaxed tracking-tight">
+                    <p className="text-[13px] font-mono text-white font-bold break-all leading-relaxed tracking-tight pr-2">
                       {fileHash}
                     </p>
                   </motion.div>
@@ -248,34 +264,59 @@ export default function Dashboard(  ) {
                         <td className="px-6 py-6">
                           <p className="text-sm font-bold text-slate-900 truncate max-w-[180px]">{ev.file_name}</p>
                           <p className="text-[10px] text-slate-500 font-bold uppercase mt-1">Cliente: {ev.client_name || 'N/A'}</p>
-                          <div className="mt-3 flex flex-col gap-1">
+                          <div className="mt-3 flex flex-col gap-1 group/hash relative">
                             <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Digital Hash:</span>
-                            <p className="text-[11px] font-mono text-blue-600 font-bold truncate max-w-[150px]" title={ev.file_hash}>
-                              {ev.file_hash}
-                            </p>
+                            <div className="flex items-center gap-2">
+                              <p className="text-[11px] font-mono text-blue-600 font-bold truncate max-w-[150px]" title={ev.file_hash}>
+                                {ev.file_hash}
+                              </p>
+                              <button 
+                                onClick={() => copyToClipboard(ev.file_hash)}
+                                className="opacity-0 group-hover/hash:opacity-100 p-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded transition-all"
+                                title="Copiar Hash"
+                              >
+                                <Copy size={10} />
+                              </button>
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-6">
                           <p className="text-[11px] font-bold text-slate-900 uppercase">{ev.perito_name || ev.full_name || userName}</p>
-                          <p className="text-[9px] text-slate-500 font-bold uppercase mt-0.5">{getRegistryLabel(ev.professional_title)}: {ev.professional_registry || ev.professional_id}</p>
+                          <p className="text-[9px] text-slate-500 font-bold uppercase mt-0.5">{getRegistryLabel(ev.professional_title)}: {ev.professional_id || ev.professional_registry || 'N/A'}</p>
                         </td>
                         <td className="px-6 py-6">
-                          <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-2.5 py-1.5 rounded-lg w-fit border border-emerald-100">
-                            <CheckCircle2 size={12} />
-                            <span className="text-[10px] font-bold uppercase">ISO 27037</span>
+                          <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-2 py-1 rounded-md w-fit border border-emerald-100">
+                            <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                            <span className="text-[9px] font-black uppercase tracking-tighter">Íntegro</span>
                           </div>
                         </td>
                         <td className="px-6 py-6">
-                          <div className="flex flex-col">
-                            <span className="text-xs font-bold text-slate-700">{new Date(ev.created_at).toLocaleDateString('pt-BR')}</span>
-                            <span className="text-[11px] font-bold text-blue-600 mt-0.5">{new Date(ev.created_at).toLocaleTimeString('pt-BR')}</span>
+                          <div className="flex items-center gap-2 text-slate-500">
+                            <Clock size={12} />
+                            <span className="text-[10px] font-bold">{new Date(ev.created_at).toLocaleDateString('pt-BR')}</span>
                           </div>
+                          <p className="text-[9px] text-slate-400 font-medium mt-1 ml-5">{new Date(ev.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                         </td>
                         <td className="px-6 py-6 text-right">
-                          <button onClick={() => generateCertificate({...ev, perito_name: userName})} className="bg-blue-50 text-blue-600 px-4 py-2 rounded-xl text-[10px] font-black hover:bg-blue-600 hover:text-white transition-all border border-blue-100 uppercase tracking-tighter">Gerar Laudo</button>
+                          <button 
+                            onClick={() => generateCertificate(ev)}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-slate-900 text-white text-[10px] font-bold rounded-xl hover:bg-blue-600 transition-all shadow-lg shadow-slate-200 uppercase tracking-widest"
+                          >
+                            <ExternalLink size={12} /> Laudo
+                          </button>
                         </td>
                       </tr>
                     ))}
+                    {filteredEvidences.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-20 text-center">
+                          <div className="flex flex-col items-center opacity-20">
+                            <HardDrive size={48} className="mb-4" />
+                            <p className="text-sm font-bold uppercase tracking-widest">Nenhuma evidência encontrada</p>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

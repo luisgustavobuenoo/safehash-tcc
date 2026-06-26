@@ -1,5 +1,9 @@
 import { motion } from 'framer-motion';
 import { Shield, Clock, Search, Lock } from 'lucide-react';
+import capability01 from '@/img/capability-01.jpg';
+import capability02 from '@/img/capability-02.jpg';
+import capability03 from '@/img/capability-03.png';
+import capability04 from '@/img/capability-04.jpg';
 
 const capabilities = [
   {
@@ -29,10 +33,10 @@ const capabilities = [
 ];
 
 const capabilityImages = [
-  "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80",
-  "https://images.unsplash.com/photo-1558494949-ef010cbdcc51?auto=format&fit=crop&q=80"
+  capability01,
+  capability02,
+  capability03,
+  capability04
 ];
 
 export default function CapabilitiesSection( ) {

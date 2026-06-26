@@ -11,7 +11,7 @@ export default function RecursosSection() {
       titulo: 'Integridade de Arquivos via SHA-256',
       categoria: 'Técnico',
       tipo: 'Referência Técnica',
-      icon: <Shield size={20} />,
+      icon: <Shield size={28} />,
       descricao: 'Análise aprofundada sobre a imutabilidade matemática e o cálculo de hashes em evidências digitais.',
       conteudo: [
         { type: 'h3', text: 'O Algoritmo SHA-256 na Computação Forense' },
@@ -29,7 +29,7 @@ export default function RecursosSection() {
       titulo: 'Protocolo de Cadeia de Custódia (CPP)',
       categoria: 'Jurídico',
       tipo: 'Referência Jurídica',
-      icon: <Scale size={20} />,
+      icon: <Scale size={28} />,
       descricao: 'Guia de conformidade com o Art. 158-B do Código de Processo Penal e a preservação do vestígio.',
       conteudo: [
         { type: 'h3', text: 'Conformidade com a Lei 13.964/2019 (Pacote Anticrime)' },
@@ -47,7 +47,7 @@ export default function RecursosSection() {
       titulo: 'Diretrizes da Norma ISO/IEC 27037',
       categoria: 'Doutrina',
       tipo: 'Referência Normativa',
-      icon: <FileText size={20} />,
+      icon: <FileText size={28} />,
       descricao: 'Padrões internacionais para identificação, coleta, aquisição e preservação de evidência digital.',
       conteudo: [
         { type: 'h3', text: 'Padronização Internacional e Rigor Científico' },
@@ -64,12 +64,12 @@ export default function RecursosSection() {
       titulo: 'Metadados e Preservação de Contexto',
       categoria: 'Forense',
       tipo: 'Referência Técnica',
-      icon: <Fingerprint size={20} />,
+      icon: <Fingerprint size={28} />,
       descricao: 'A importância dos metadados (EXIF, MAC) na validação da autenticidade de arquivos digitais.',
       conteudo: [
         { type: 'h3', text: 'Além do Conteúdo: O Valor dos Metadados' },
         { type: 'p', text: 'Um arquivo digital não é composto apenas por seus dados visíveis (como os pixels de uma foto), mas também por metadados que descrevem sua origem, autoria e histórico de modificação.' },
-        { type: 'h4', text: 'Elementos de Verificação Contextual' },
+        { type: 'h4', text: 'Elements de Verificação Contextual' },
         { type: 'li', text: 'Dados EXIF: Informações de GPS, modelo da câmera, data e hora exata da captura em fotografias.' },
         { type: 'li', text: 'Timestamps MAC: Datas de Modificação, Acesso e Criação registradas pelo sistema de arquivos.' },
         { type: 'li', text: 'Integridade Estrutural: Verificação se o arquivo mantém seu cabeçalho (header) original e não foi corrompido ou injetado com dados maliciosos.' },
@@ -80,8 +80,8 @@ export default function RecursosSection() {
   ];
 
   return (
-    <section className="py-16 md:py-24 bg-slate-50">
-      <div className="container mx-auto px-4 max-w-6xl">
+    <section className="py-20 md:py-28 bg-slate-50">
+      <div className="container mx-auto px-6 max-w-5xl">
         <motion.div 
           className="mb-16 text-center"
           initial={{ opacity: 0, y: -20 }}
@@ -89,35 +89,41 @@ export default function RecursosSection() {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4 tracking-tight">Central de Recursos Forenses</h2>
-          <div className="w-16 h-1 bg-blue-600 mx-auto mb-6"></div>
-          <p className="text-base md:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">Documentação técnica e jurídica para fundamentação de laudos, perícias e estratégias defensivas.</p>
+          <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-[10px] font-bold uppercase tracking-widest mb-4">
+            Conhecimento Técnico
+          </span>
+          <h2 className="text-3xl md:text-4xl font-black text-slate-900 mb-4 tracking-tight">Central de Recursos Forenses</h2>
+          <div className="w-16 h-1.5 bg-blue-600 mx-auto mb-6 rounded-full"></div>
+          <p className="text-base text-slate-600 max-w-xl mx-auto leading-relaxed font-medium">Documentação técnica e jurídica para fundamentação de laudos e perícias.</p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {recursos.map((rec, idx) => (
             <motion.div 
               key={idx} 
-              className="bg-white p-8 rounded-[32px] border border-slate-200 shadow-sm hover:shadow-2xl transition-all group cursor-pointer flex flex-col min-h-[420px] relative" 
+              className="bg-white p-10 rounded-[40px] border border-slate-200 shadow-sm hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-300 group cursor-pointer flex flex-col min-h-[400px] relative hover:-translate-y-1" 
               onClick={() => setSelectedItem(rec)}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: idx * 0.1 }}
               viewport={{ once: true }}
             >
-              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+              <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 shadow-sm">
                 {rec.icon}
               </div>
               <div className="flex-grow">
-                <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-4 block">{rec.categoria}</span>
-                <h3 className="text-lg font-bold text-slate-900 mb-4 leading-tight group-hover:text-blue-700 transition-colors">{rec.titulo}</h3>
-                <p className="text-xs text-slate-500 leading-relaxed mb-6 line-clamp-4">{rec.descricao}</p>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">{rec.categoria}</span>
+                  <div className="h-px bg-slate-100 flex-grow"></div>
+                </div>
+                <h3 className="text-2xl font-black text-slate-900 mb-4 leading-tight group-hover:text-blue-700 transition-colors">{rec.titulo}</h3>
+                <p className="text-base text-slate-500 leading-relaxed mb-8 font-medium line-clamp-3">{rec.descricao}</p>
               </div>
-              <div className="pt-6 border-t border-slate-50 flex items-center justify-between text-[9px] font-bold uppercase tracking-widest">
+              <div className="pt-6 border-t border-slate-50 flex items-center justify-between text-[11px] font-black uppercase tracking-widest">
                 <span className="flex items-center gap-2 text-slate-400">
-                  <Bookmark size={12} className="text-blue-500" /> {rec.tipo}
+                  <Bookmark size={16} className="text-blue-500" /> {rec.tipo}
                 </span>
-                <span className="text-blue-600 flex items-center gap-1">Acessar <ArrowRight size={12} /></span>
+                <span className="text-blue-600 flex items-center gap-2 group-hover:gap-3 transition-all">Ver mais <ArrowRight size={16} /></span>
               </div>
             </motion.div>
           ))}
@@ -125,42 +131,40 @@ export default function RecursosSection() {
 
         <AnimatePresence>
           {selectedItem && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md">
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
               <motion.div 
-                initial={{ opacity: 0, scale: 0.95, y: 40 }}
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 40 }}
-                className="bg-white rounded-[40px] shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col border border-white/10"
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="bg-white rounded-[40px] shadow-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col border border-slate-200"
               >
-               
-                <div className="p-8 bg-slate-950 text-white flex justify-between items-center shrink-0">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-blue-600 rounded-2xl shadow-lg shadow-blue-900/20">{selectedItem.icon}</div>
+                <div className="p-8 bg-slate-900 text-white flex justify-between items-center shrink-0">
+                  <div className="flex items-center gap-5">
+                    <div className="p-3 bg-blue-600 rounded-2xl shadow-lg">{selectedItem.icon}</div>
                     <div>
-                      <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1 block">{selectedItem.tipo}</span>
+                      <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1 block">{selectedItem.tipo}</span>
                       <h3 className="text-xl md:text-2xl font-bold leading-tight">{selectedItem.titulo}</h3>
                     </div>
                   </div>
-                  <button onClick={() => setSelectedItem(null)} className="p-3 hover:bg-white/10 rounded-full transition-colors">
-                    <X size={24} />
+                  <button onClick={() => setSelectedItem(null)} className="p-2 hover:bg-white/10 rounded-full transition-colors">
+                    <X size={28} />
                   </button>
                 </div>
 
-                
                 <div className="p-10 overflow-y-auto bg-white flex-grow">
                   <div className="space-y-10 max-w-2xl mx-auto">
                     {selectedItem.conteudo.map((block: any, i: number) => {
-                      if (block.type === 'h3') return <h3 key={i} className="text-2xl font-bold text-slate-900 border-b-4 border-blue-600 w-fit pb-1">{block.text}</h3>;
-                      if (block.type === 'h4') return <h4 key={i} className="text-xs font-black text-blue-600 uppercase tracking-widest pt-4">{block.text}</h4>;
-                      if (block.type === 'p') return <p key={i} className="text-slate-600 leading-relaxed text-base">{block.text}</p>;
+                      if (block.type === 'h3') return <h3 key={i} className="text-2xl font-bold text-slate-900 border-b-4 border-blue-600/10 w-fit pb-1">{block.text}</h3>;
+                      if (block.type === 'h4') return <h4 key={i} className="text-[10px] font-bold text-blue-600 uppercase tracking-widest pt-4">{block.text}</h4>;
+                      if (block.type === 'p') return <p key={i} className="text-slate-600 leading-relaxed text-base font-medium">{block.text}</p>;
                       if (block.type === 'li') return (
-                        <div key={i} className="flex items-start gap-4 bg-slate-50 p-6 rounded-[24px] border border-slate-100 group hover:border-blue-200 transition-all hover:shadow-sm">
-                          <div className="w-6 h-6 bg-white rounded-lg shadow-sm flex items-center justify-center flex-shrink-0 mt-1">
+                        <div key={i} className="flex items-start gap-4 bg-slate-50 p-6 rounded-[24px] border border-slate-100">
+                          <div className="w-7 h-7 bg-white rounded-lg shadow-sm flex items-center justify-center flex-shrink-0 mt-0.5">
                             <CheckCircle2 className="w-4 h-4 text-green-600" />
                           </div>
                           <div>
-                            <p className="text-slate-800 text-sm font-bold leading-relaxed">{block.text.split(':')[0]}:</p>
-                            <p className="text-slate-600 text-sm mt-1">{block.text.split(':')[1]}</p>
+                            <p className="text-slate-800 text-base font-bold leading-relaxed">{block.text.split(':')[0]}:</p>
+                            <p className="text-slate-600 text-sm mt-1 font-medium leading-relaxed">{block.text.split(':')[1]}</p>
                           </div>
                         </div>
                       );
@@ -169,20 +173,16 @@ export default function RecursosSection() {
                   </div>
                   
                   <div className="mt-12 p-8 bg-blue-50 rounded-[32px] border border-blue-100 flex items-start gap-5 max-w-2xl mx-auto">
-                    <div className="p-2 bg-white rounded-xl shadow-sm"><Info className="w-6 h-6 text-blue-600" /></div>
-                    <p className="text-xs text-blue-800 leading-relaxed font-medium">
+                    <Info className="w-6 h-6 text-blue-600 shrink-0" />
+                    <p className="text-xs text-blue-800 leading-relaxed font-bold">
                       Este documento integra a biblioteca técnica do projeto SafeHash. As informações aqui contidas são baseadas em padrões internacionais de forense digital e legislação brasileira vigente.
                     </p>
                   </div>
                 </div>
 
-               
                 <div className="p-6 border-t border-slate-100 bg-slate-50 flex items-center justify-between px-10 shrink-0">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></div>
-                    <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">SafeHash DocID: SH-{Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
-                  </div>
-                  <Button size="lg" className="rounded-2xl px-10 font-bold shadow-lg shadow-blue-600/20" onClick={() => setSelectedItem(null)}>Concluir Leitura</Button>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">SafeHash DocID: SH-{Math.random().toString(36).substr(2, 6).toUpperCase()}</span>
+                  <Button size="sm" className="rounded-2xl px-10 h-11 font-bold text-xs uppercase tracking-widest" onClick={() => setSelectedItem(null)}>Fechar Documento</Button>
                 </div>
               </motion.div>
             </div>
